@@ -1,0 +1,6 @@
+{
+  "name": "Obsidian Portfolio",
+  "description": "A high-fidelity minimalist portfolio website for a graphic designer and video editor, with customizable work filter, capabilities interactive grid, process tracker, stats, and a custom message form.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --bg-primary: #131313;
+  --bg-secondary: #1b1b1b;
+  --bg-tertiary: #0e0e0e;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color-soft: rgba(255, 255, 255, 0.05);
+  --nav-bg: rgba(19, 19, 19, 0.9);
+  --card-bg: #1b1b1b;
+  --card-border: rgba(255, 255, 255, 0.05);
+}
+
+html.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f4f4f5;
+  --bg-tertiary: #fafafa;
+  --text-primary: #000000;
+  --text-secondary: #4b5563;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --border-color-soft: rgba(0, 0, 0, 0.05);
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --card-bg: #fafafa;
+  --card-border: rgba(0, 0, 0, 0.08);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Utility transitions and classes */
+.bg-custom-primary {
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease;
+}
+.bg-custom-secondary {
+  background-color: var(--bg-secondary);
+  transition: background-color 0.3s ease;
+}
+.bg-custom-tertiary {
+  background-color: var(--bg-tertiary);
+  transition: background-color 0.3s ease;
+}
+.bg-custom-nav {
+  background-color: var(--nav-bg);
+  transition: background-color 0.3s ease;
+}
+.bg-custom-card {
+  background-color: var(--card-bg);
+  transition: background-color 0.3s ease;
+}
+.text-custom-primary {
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+.text-custom-secondary {
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
+}
+.border-custom {
+  border-color: var(--border-color);
+  transition: border-color 0.3s ease;
+}
+.border-custom-soft {
+  border-color: var(--border-color-soft);
+  transition: border-color 0.3s ease;
+}
+.border-custom-card {
+  border-color: var(--card-border);
+  transition: border-color 0.3s ease;
+}
+
+/* Custom scrollbar to match the premium theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  transition: background-color 0.3s ease;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+
