@@ -14,3 +14,23 @@ client/.env
 client/.env.local
 server/.env
 server/.env.local
+
+# Vercel / Netlify
+.vercel/
+.netlify/
+
+# Vite / client build output
+client/dist/
+
+# IDE files
+.vscode/
+.idea/
+
+# Tests
+*.test.*
+
+# Misc
+Thumbs.db
+*.tgz
+.kiro/
+.vscode/
