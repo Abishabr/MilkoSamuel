@@ -33,4 +33,4 @@ client/dist/
 Thumbs.db
 *.tgz
 .kiro/
-.vscode/
+.aistudio/
