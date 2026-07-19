@@ -8,7 +8,7 @@ import { openCloudinaryUpload, AdminTabProps } from "./cloudinaryUpload";
 export default function SettingsTab({ showToast, showWriteError }: AdminTabProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const { settings, refetch } = useData();
+  const { settings, projects, refetch } = useData();
 
   const [settingsForm, setSettingsForm] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
@@ -154,12 +154,11 @@ export default function SettingsTab({ showToast, showWriteError }: AdminTabProps
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Projects Completed</label>
-              <input
-                type="text"
-                value={settingsForm.projects_completed || ""}
-                onChange={e => setSettingsForm({ ...settingsForm, projects_completed: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
-              />
+              {/* Derived live from the database — the number of projects in the portfolio. */}
+              <div className={`w-full p-3 border text-sm flex items-center justify-between ${isLight ? "bg-zinc-100 border-black/10 text-gray-700" : "bg-zinc-900/50 border-white/10 text-gray-300"}`}>
+                <span className="font-bold">{projects.length}</span>
+                <span className="text-[9px] font-mono uppercase tracking-widest text-gray-500">Auto-counted</span>
+              </div>
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Happy Clients</label>

@@ -22,7 +22,7 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
   const [animateBars, setAnimateBars] = useState(false);
-  const { settings, skills: dynamicSkills } = useData();
+  const { settings, skills: dynamicSkills, projects } = useData();
 
   useEffect(() => {
     // Trigger animation of skill percentage bars
@@ -31,7 +31,9 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
   }, []);
 
   const years = settings?.years_experience || "10+";
-  const completed = settings?.projects_completed || "48";
+  // Projects Completed is derived live from the database — the number of
+  // projects in the portfolio — rather than a manually maintained setting.
+  const completed = projects.length > 0 ? String(projects.length) : (settings?.projects_completed || "48");
   const clients = settings?.happy_clients || "35";
   const profileImg = settings?.profile_picture_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBDZ38TfxyqRb4zhdOToTHQ8R81gjtmltwGmQbLvq4Loe94oaP6YHB47rpSpGcUYbU2xsjiiFUrx8aQXIwMjVffL-I9LHa3gH65XaibsGFtPLN7VQ9uLT3Hz6I2KZFlPcLQT3e1r9GtdfRGhhZTvDc5JztDyGFnMmwSRlRUK1YvZ0Q-KNysyxRXKyNuOvRY6SMgMpnTfgNdDLJTvrdM-Rke6tY_IFPCSdU-MkRevFjXV4z0ko1yPzv7hCFWOY3mytZ19L01t3ZEujHy";
   const bioStory = settings?.biography || "I am Samuel Milko, a multidisciplinary graphic designer and digital visual director based in Addis Ababa, Ethiopia, specializing in high-fidelity experiences that bridge raw human intuition and mathematical precision.";

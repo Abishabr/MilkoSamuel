@@ -9,14 +9,20 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+  children,
+  storageKey = "portfolio-theme",
+}: {
+  children: React.ReactNode;
+  storageKey?: string;
+}) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem("portfolio-theme");
+    const saved = localStorage.getItem(storageKey);
     return (saved as Theme) || "dark";
   });
 
   useEffect(() => {
-    localStorage.setItem("portfolio-theme", theme);
+    localStorage.setItem(storageKey, theme);
     const root = document.documentElement;
     if (theme === "light") {
       root.classList.add("light");
@@ -25,7 +31,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add("dark");
       root.classList.remove("light");
     }
-  }, [theme]);
+  }, [theme, storageKey]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));

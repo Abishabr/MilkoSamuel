@@ -49,7 +49,7 @@ function MainApp() {
     const handleLocationChange = () => {
       setIsAdminRoute(window.location.pathname === "/admin" || window.location.pathname.startsWith("/admin/") || window.location.hash === "#admin");
     };
-    
+
     window.addEventListener("popstate", handleLocationChange);
     window.addEventListener("hashchange", handleLocationChange);
     return () => {
@@ -57,6 +57,21 @@ function MainApp() {
       window.removeEventListener("hashchange", handleLocationChange);
     };
   }, []);
+
+  // Re-apply the portfolio theme to <html> when returning from the admin area
+  // (the admin has its own independent theme that also writes the root class).
+  useEffect(() => {
+    if (!isAdminRoute) {
+      const root = document.documentElement;
+      if (theme === "light") {
+        root.classList.add("light");
+        root.classList.remove("dark");
+      } else {
+        root.classList.add("dark");
+        root.classList.remove("light");
+      }
+    }
+  }, [isAdminRoute, theme]);
 
   const handleStartTalk = () => {
     setSelectedProject(null);
@@ -71,15 +86,15 @@ function MainApp() {
 
   if (isAdminRoute) {
     return (
-      <div className={`bg-custom-primary text-custom-primary min-h-screen font-sans overflow-x-hidden transition-colors duration-300 ${
-        theme === "light" ? "selection:bg-black selection:text-white" : "selection:bg-white selection:text-black"
-      }`}>
+      // The admin area manages its own light/dark theme, stored separately
+      // from the public portfolio theme (localStorage key: "admin-theme").
+      <ThemeProvider storageKey="admin-theme">
         <AdminDashboard onBackToPortfolio={() => {
           window.history.pushState(null, "", "/");
           setIsAdminRoute(false);
           setActiveTab("home");
         }} />
-      </div>
+      </ThemeProvider>
     );
   }
 
