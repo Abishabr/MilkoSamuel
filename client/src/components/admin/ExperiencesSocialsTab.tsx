@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useData } from "../../context/DataContext";
-import { useTheme } from "../../context/ThemeContext";
 import { createExperience, updateExperience, deleteExperience, createSocialLink, updateSocialLink, deleteSocialLink } from "../../lib/api";
 import { Trash2, Edit2 } from "lucide-react";
 import { AdminTabProps } from "./cloudinaryUpload";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Label } from "@/src/components/ui/label";
 
 export default function ExperiencesSocialsTab({ showToast, showWriteError }: AdminTabProps) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
   const { experiences, socialLinks, refetch } = useData();
 
   // Experiences state
@@ -120,64 +121,64 @@ export default function ExperiencesSocialsTab({ showToast, showWriteError }: Adm
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-base font-extrabold tracking-tight uppercase font-sans">Work History Experience</h3>
-            <p className="text-xs text-gray-500 font-mono">Curriculum Vitae block on About page</p>
+            <p className="text-xs text-muted-foreground font-mono">Curriculum Vitae block on About page</p>
           </div>
           {!isAddingExp && !editingExp && (
-            <button onClick={startAddExp} className={`px-3 py-2 text-[10px] font-bold uppercase border cursor-pointer ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>
+            <Button onClick={startAddExp} size="sm" className="text-[10px] font-bold uppercase">
               + Add Work
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Form Experience */}
         {(isAddingExp || editingExp) && (
-          <form onSubmit={handleSaveExp} className="space-y-4 p-4 border border-dashed border-white/10 max-w-md">
+          <form onSubmit={handleSaveExp} className="space-y-4 p-4 border border-dashed max-w-md">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Company</label>
-                <input type="text" required value={expForm.company} onChange={e => setExpForm({...expForm, company: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Company</Label>
+                <Input type="text" required value={expForm.company} onChange={e => setExpForm({...expForm, company: e.target.value})} className="text-xs" />
               </div>
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Position</label>
-                <input type="text" required value={expForm.position} onChange={e => setExpForm({...expForm, position: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Position</Label>
+                <Input type="text" required value={expForm.position} onChange={e => setExpForm({...expForm, position: e.target.value})} className="text-xs" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Start Date/Year</label>
-                <input type="text" required value={expForm.start_date} onChange={e => setExpForm({...expForm, start_date: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Start Date/Year</Label>
+                <Input type="text" required value={expForm.start_date} onChange={e => setExpForm({...expForm, start_date: e.target.value})} className="text-xs" />
               </div>
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">End Date/Year</label>
-                <input type="text" value={expForm.end_date} onChange={e => setExpForm({...expForm, end_date: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">End Date/Year</Label>
+                <Input type="text" value={expForm.end_date} onChange={e => setExpForm({...expForm, end_date: e.target.value})} className="text-xs" />
               </div>
             </div>
-            <div>
-              <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Position details / Description</label>
-              <textarea rows={2} value={expForm.description} onChange={e => setExpForm({...expForm, description: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+            <div className="space-y-1">
+              <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Position details / Description</Label>
+              <Textarea rows={2} value={expForm.description} onChange={e => setExpForm({...expForm, description: e.target.value})} className="text-xs" />
             </div>
             <div className="flex items-center gap-4">
-              <label className="text-[9px] uppercase font-mono font-bold text-gray-400">Order:</label>
-              <input type="number" value={expForm.display_order} onChange={e => setExpForm({...expForm, display_order: parseInt(e.target.value) || 1})} className={`w-16 p-1 text-center font-mono text-xs ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
-              <button type="submit" className={`px-4 py-1.5 text-[10px] font-bold uppercase ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>Save</button>
-              <button type="button" onClick={() => { setIsAddingExp(false); setEditingExp(null); }} className="text-xs text-gray-500 font-mono">Cancel</button>
+              <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Order:</Label>
+              <Input type="number" value={expForm.display_order} onChange={e => setExpForm({...expForm, display_order: parseInt(e.target.value) || 1})} className="w-16 text-center font-mono text-xs" />
+              <Button type="submit" size="sm" className="text-[10px] font-bold uppercase">Save</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setIsAddingExp(false); setEditingExp(null); }} className="text-xs text-muted-foreground font-mono">Cancel</Button>
             </div>
           </form>
         )}
 
         {!isAddingExp && !editingExp && (
-          <div className="border border-white/5 divide-y divide-white/5 p-4">
+          <div className="border divide-y p-4">
             {experiences.map(exp => (
               <div key={exp.id} className="py-3 flex justify-between items-start">
                 <div>
-                  <span className="font-mono text-xs text-gray-500 mr-4">[{exp.start_date} - {exp.end_date || "Present"}]</span>
+                  <span className="font-mono text-xs text-muted-foreground mr-4">[{exp.start_date} - {exp.end_date || "Present"}]</span>
                   <span className="font-bold text-sm tracking-wide uppercase">{exp.position}</span>
                   <span className="text-xs font-mono ml-3 text-yellow-500">@ {exp.company}</span>
-                  <p className="text-xs text-gray-500 mt-1 pl-12">{exp.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1 pl-12">{exp.description}</p>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => startEditExp(exp)} className="p-1 border border-white/5 text-gray-400"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDeleteExp(exp.id)} className="p-1 border border-white/5 text-gray-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <Button variant="outline" size="icon-xs" onClick={() => startEditExp(exp)} className="text-muted-foreground"><Edit2 /></Button>
+                  <Button variant="outline" size="icon-xs" onClick={() => handleDeleteExp(exp.id)} className="text-muted-foreground hover:text-destructive"><Trash2 /></Button>
                 </div>
               </div>
             ))}
@@ -186,50 +187,50 @@ export default function ExperiencesSocialsTab({ showToast, showWriteError }: Adm
       </div>
 
       {/* 2. Social Links */}
-      <div className="space-y-6 pt-6 border-t border-dashed border-white/10">
+      <div className="space-y-6 pt-6 border-t border-dashed">
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-base font-extrabold tracking-tight uppercase font-sans">Social Platform Links</h3>
-            <p className="text-xs text-gray-500 font-mono">Footer links</p>
+            <p className="text-xs text-muted-foreground font-mono">Footer links</p>
           </div>
           {!isAddingSocial && !editingSocial && (
-            <button onClick={startAddSocial} className={`px-3 py-2 text-[10px] font-bold uppercase border cursor-pointer ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>
+            <Button onClick={startAddSocial} size="sm" className="text-[10px] font-bold uppercase">
               + Add Link
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Form Social */}
         {(isAddingSocial || editingSocial) && (
-          <form onSubmit={handleSaveSocial} className="space-y-4 p-4 border border-dashed border-white/10 max-w-md">
+          <form onSubmit={handleSaveSocial} className="space-y-4 p-4 border border-dashed max-w-md">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Platform Name</label>
-                <input type="text" required placeholder="e.g. Telegram, WhatsApp" value={socialForm.platform} onChange={e => setSocialForm({...socialForm, platform: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Platform Name</Label>
+                <Input type="text" required placeholder="e.g. Telegram, WhatsApp" value={socialForm.platform} onChange={e => setSocialForm({...socialForm, platform: e.target.value})} className="text-xs" />
               </div>
-              <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Direct URL</label>
-                <input type="text" required value={socialForm.url} onChange={e => setSocialForm({...socialForm, url: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <div className="space-y-1">
+                <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Direct URL</Label>
+                <Input type="text" required value={socialForm.url} onChange={e => setSocialForm({...socialForm, url: e.target.value})} className="text-xs" />
               </div>
             </div>
             <div className="flex gap-3">
-              <button type="submit" className={`px-4 py-1.5 text-[10px] font-bold uppercase ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>Save</button>
-              <button type="button" onClick={() => { setIsAddingSocial(false); setEditingSocial(null); }} className="text-xs text-gray-500 font-mono">Cancel</button>
+              <Button type="submit" size="sm" className="text-[10px] font-bold uppercase">Save</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setIsAddingSocial(false); setEditingSocial(null); }} className="text-xs text-muted-foreground font-mono">Cancel</Button>
             </div>
           </form>
         )}
 
         {!isAddingSocial && !editingSocial && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 border border-white/5 p-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 border p-4">
             {socialLinks.map(soc => (
-              <div key={soc.id} className="p-2 border border-white/5 flex justify-between items-center">
+              <div key={soc.id} className="p-2 border flex justify-between items-center">
                 <div>
                   <p className="font-bold text-xs uppercase">{soc.platform}</p>
-                  <a href={soc.url} target="_blank" rel="noreferrer" className="text-[10px] text-gray-500 truncate block max-w-[120px]">{soc.url}</a>
+                  <a href={soc.url} target="_blank" rel="noreferrer" className="text-[10px] text-muted-foreground truncate block max-w-[120px]">{soc.url}</a>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => startEditSocial(soc)} className="p-1 text-gray-400 hover:text-white"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDeleteSocial(soc.id)} className="p-1 text-gray-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <Button variant="ghost" size="icon-xs" onClick={() => startEditSocial(soc)} className="text-muted-foreground hover:text-foreground"><Edit2 /></Button>
+                  <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteSocial(soc.id)} className="text-muted-foreground hover:text-destructive"><Trash2 /></Button>
                 </div>
               </div>
             ))}

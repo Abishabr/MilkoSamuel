@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { useData } from "../../context/DataContext";
-import { useTheme } from "../../context/ThemeContext";
 import { createService, updateService, deleteService, createSkill, updateSkill, deleteSkill } from "../../lib/api";
 import { Trash2, Edit2 } from "lucide-react";
 import { AdminTabProps } from "./cloudinaryUpload";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
+import { Textarea } from "@/src/components/ui/textarea";
 
 export default function ServicesSkillsTab({ showToast, showWriteError }: AdminTabProps) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
   const { services, skills, refetch } = useData();
 
   // Services state
@@ -112,55 +113,55 @@ export default function ServicesSkillsTab({ showToast, showWriteError }: AdminTa
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-base font-extrabold tracking-tight uppercase font-sans">My Services Capabilities</h3>
-            <p className="text-xs text-gray-500 font-mono">Capabilities list shown on Capabilities page</p>
+            <p className="text-xs text-muted-foreground font-mono">Capabilities list shown on Capabilities page</p>
           </div>
           {!isAddingService && !editingService && (
-            <button onClick={startAddService} className={`px-3 py-2 text-[10px] font-bold uppercase border cursor-pointer ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>
+            <Button onClick={startAddService} size="sm" className="text-[10px] font-bold uppercase">
               + Add Service
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Form Service */}
         {(isAddingService || editingService) && (
-          <form onSubmit={handleSaveService} className="space-y-4 p-4 border border-dashed border-white/10 max-w-md">
+          <form onSubmit={handleSaveService} className="space-y-4 p-4 border border-dashed max-w-md">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Service Title / Name</label>
-                <input type="text" required value={serviceForm.name} onChange={e => setServiceForm({...serviceForm, name: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+                <Label className="block text-[9px] uppercase font-mono font-bold text-muted-foreground mb-1">Service Title / Name</Label>
+                <Input type="text" required value={serviceForm.name} onChange={e => setServiceForm({...serviceForm, name: e.target.value})} className="text-xs" />
               </div>
               <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Lucide Icon name</label>
-                <input type="text" required value={serviceForm.icon} onChange={e => setServiceForm({...serviceForm, icon: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+                <Label className="block text-[9px] uppercase font-mono font-bold text-muted-foreground mb-1">Lucide Icon name</Label>
+                <Input type="text" required value={serviceForm.icon} onChange={e => setServiceForm({...serviceForm, icon: e.target.value})} className="text-xs" />
               </div>
             </div>
             <div>
-              <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Description Paragraph</label>
-              <textarea rows={2} required value={serviceForm.description} onChange={e => setServiceForm({...serviceForm, description: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+              <Label className="block text-[9px] uppercase font-mono font-bold text-muted-foreground mb-1">Description Paragraph</Label>
+              <Textarea rows={2} required value={serviceForm.description} onChange={e => setServiceForm({...serviceForm, description: e.target.value})} className="text-xs" />
             </div>
             <div className="flex items-center gap-4">
-              <label className="text-[9px] uppercase font-mono font-bold text-gray-400">Order:</label>
-              <input type="number" value={serviceForm.display_order} onChange={e => setServiceForm({...serviceForm, display_order: parseInt(e.target.value) || 1})} className={`w-16 p-1 text-center font-mono text-xs ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
-              <button type="submit" className={`px-4 py-1.5 text-[10px] font-bold uppercase ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>Save</button>
-              <button type="button" onClick={() => { setIsAddingService(false); setEditingService(null); }} className="text-xs text-gray-500 font-mono">Cancel</button>
+              <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Order:</Label>
+              <Input type="number" value={serviceForm.display_order} onChange={e => setServiceForm({...serviceForm, display_order: parseInt(e.target.value) || 1})} className="w-16 text-center font-mono text-xs" />
+              <Button type="submit" size="sm" className="text-[10px] font-bold uppercase">Save</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setIsAddingService(false); setEditingService(null); }} className="text-xs text-muted-foreground font-mono">Cancel</Button>
             </div>
           </form>
         )}
 
         {!isAddingService && !editingService && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-white/5 divide-y md:divide-y-0 md:divide-x divide-white/5 p-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border divide-y md:divide-y-0 md:divide-x p-4">
             {services.map(s => (
               <div key={s.id} className="p-2 flex justify-between items-start gap-4">
                 <div>
                   <h4 className="font-bold text-sm flex items-center gap-2">
-                    <span className="text-[10px] font-mono text-gray-500">[{s.icon || "PenTool"}]</span>
+                    <span className="text-[10px] font-mono text-muted-foreground">[{s.icon || "PenTool"}]</span>
                     {s.name}
                   </h4>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{s.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{s.description}</p>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
-                  <button onClick={() => startEditService(s)} className="p-1 border border-white/5 text-gray-400 hover:text-white"><Edit2 className="w-3 h-3" /></button>
-                  <button onClick={() => handleDeleteService(s.id)} className="p-1 border border-white/5 text-gray-400 hover:text-red-500"><Trash2 className="w-3 h-3" /></button>
+                  <Button variant="ghost" size="icon" onClick={() => startEditService(s)} className="size-6 border text-muted-foreground hover:text-foreground"><Edit2 className="w-3 h-3" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteService(s.id)} className="size-6 border text-muted-foreground hover:text-destructive"><Trash2 className="w-3 h-3" /></Button>
                 </div>
               </div>
             ))}
@@ -169,52 +170,52 @@ export default function ServicesSkillsTab({ showToast, showWriteError }: AdminTa
       </div>
 
       {/* 2. Skills Counter section */}
-      <div className="space-y-6 pt-6 border-t border-dashed border-white/10">
+      <div className="space-y-6 pt-6 border-t border-dashed">
         <div className="flex justify-between items-center">
           <div>
             <h3 className="text-base font-extrabold tracking-tight uppercase font-sans">My Expertise Skills</h3>
-            <p className="text-xs text-gray-500 font-mono">Percentage progress bars on About Full page</p>
+            <p className="text-xs text-muted-foreground font-mono">Percentage progress bars on About Full page</p>
           </div>
           {!isAddingSkill && !editingSkill && (
-            <button onClick={startAddSkill} className={`px-3 py-2 text-[10px] font-bold uppercase border cursor-pointer ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>
+            <Button onClick={startAddSkill} size="sm" className="text-[10px] font-bold uppercase">
               + Add Skill
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Form Skill */}
         {(isAddingSkill || editingSkill) && (
-          <form onSubmit={handleSaveSkill} className="space-y-4 p-4 border border-dashed border-white/10 max-w-md">
+          <form onSubmit={handleSaveSkill} className="space-y-4 p-4 border border-dashed max-w-md">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Skill Name</label>
-                <input type="text" required value={skillForm.name} onChange={e => setSkillForm({...skillForm, name: e.target.value})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+                <Label className="block text-[9px] uppercase font-mono font-bold text-muted-foreground mb-1">Skill Name</Label>
+                <Input type="text" required value={skillForm.name} onChange={e => setSkillForm({...skillForm, name: e.target.value})} className="text-xs" />
               </div>
               <div>
-                <label className="block text-[9px] uppercase font-mono font-bold text-gray-400 mb-1">Percentage (0-100)</label>
-                <input type="number" required min="0" max="100" value={skillForm.percentage} onChange={e => setSkillForm({...skillForm, percentage: parseInt(e.target.value) || 0})} className={`w-full p-2 border text-xs focus:outline-none ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
+                <Label className="block text-[9px] uppercase font-mono font-bold text-muted-foreground mb-1">Percentage (0-100)</Label>
+                <Input type="number" required min="0" max="100" value={skillForm.percentage} onChange={e => setSkillForm({...skillForm, percentage: parseInt(e.target.value) || 0})} className="text-xs" />
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <label className="text-[9px] uppercase font-mono font-bold text-gray-400">Order:</label>
-              <input type="number" value={skillForm.display_order} onChange={e => setSkillForm({...skillForm, display_order: parseInt(e.target.value) || 1})} className={`w-16 p-1 text-center font-mono text-xs ${isLight ? "bg-zinc-50 border-black/10" : "bg-zinc-900 border-white/10"}`} />
-              <button type="submit" className={`px-4 py-1.5 text-[10px] font-bold uppercase ${isLight ? "bg-black text-white" : "bg-white text-black"}`}>Save</button>
-              <button type="button" onClick={() => { setIsAddingSkill(false); setEditingSkill(null); }} className="text-xs text-gray-500 font-mono">Cancel</button>
+              <Label className="text-[9px] uppercase font-mono font-bold text-muted-foreground">Order:</Label>
+              <Input type="number" value={skillForm.display_order} onChange={e => setSkillForm({...skillForm, display_order: parseInt(e.target.value) || 1})} className="w-16 text-center font-mono text-xs" />
+              <Button type="submit" size="sm" className="text-[10px] font-bold uppercase">Save</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => { setIsAddingSkill(false); setEditingSkill(null); }} className="text-xs text-muted-foreground font-mono">Cancel</Button>
             </div>
           </form>
         )}
 
         {!isAddingSkill && !editingSkill && (
-          <div className="border border-white/5 divide-y divide-white/5 p-4">
+          <div className="border divide-y p-4">
             {skills.map(sk => (
               <div key={sk.id} className="py-2.5 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                  <span className="font-mono text-xs text-gray-500">[{sk.percentage}%]</span>
+                  <span className="font-mono text-xs text-muted-foreground">[{sk.percentage}%]</span>
                   <span className="font-bold text-sm uppercase tracking-wider">{sk.name}</span>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => startEditSkill(sk)} className="p-1 border border-white/5 text-gray-400"><Edit2 className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => handleDeleteSkill(sk.id)} className="p-1 border border-white/5 text-gray-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <Button variant="ghost" size="icon" onClick={() => startEditSkill(sk)} className="size-7 border text-muted-foreground hover:text-foreground"><Edit2 className="w-3.5 h-3.5" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteSkill(sk.id)} className="size-7 border text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
                 </div>
               </div>
             ))}

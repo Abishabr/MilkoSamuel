@@ -1,9 +1,16 @@
 import React, { useState } from "react";
 import { useData } from "../../context/DataContext";
-import { useTheme } from "../../context/ThemeContext";
 import { createProject, updateProject, deleteProject } from "../../lib/api";
 import { Plus, Trash2, Edit2, CircleAlert } from "lucide-react";
 import { openCloudinaryUpload, AdminTabProps } from "./cloudinaryUpload";
+
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import { Label } from "@/src/components/ui/label";
+import { Textarea } from "@/src/components/ui/textarea";
+import { Badge } from "@/src/components/ui/badge";
+
+const labelCls = "text-[10px] font-bold uppercase tracking-wider font-mono text-muted-foreground";
 
 const emptyForm = {
   id: "",
@@ -28,8 +35,6 @@ const emptyForm = {
 };
 
 export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
   const { projects, categories, refetch } = useData();
 
   const [editingProject, setEditingProject] = useState<any | null>(null);
@@ -137,58 +142,57 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold tracking-tighter uppercase font-sans">Projects Database</h2>
-          <p className="text-xs text-gray-500 font-mono mt-1 uppercase tracking-widest">Add or modify case studies</p>
+          <p className="text-xs text-muted-foreground font-mono mt-1 uppercase tracking-widest">Add or modify case studies</p>
         </div>
         {!isAddingProject && !editingProject && (
-          <button
+          <Button
             onClick={startAddProject}
-            className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 border cursor-pointer transition-all ${
-              isLight
-                ? "bg-black text-white border-black hover:bg-zinc-800"
-                : "bg-white text-black border-white hover:bg-zinc-200"
-            }`}
+            className="text-[10px] font-bold uppercase tracking-widest"
           >
             <Plus className="w-3.5 h-3.5" /> Create Project
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Listing Projects */}
       {!isAddingProject && !editingProject && (
-        <div className="border border-white/5 divide-y divide-white/5">
+        <div className="border divide-y">
           {projects.map((proj) => (
-            <div key={proj.id} className="flex items-center justify-between p-4 group hover:bg-zinc-50/5 transition-colors">
+            <div key={proj.id} className="flex items-center justify-between p-4 group hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-4">
                 <img
                   src={proj.cover_image_url || ""}
                   alt={proj.title}
-                  className="w-16 h-12 object-cover border border-white/10"
+                  className="w-16 h-12 object-cover border"
                   referrerPolicy="no-referrer"
                 />
                 <div>
                   <h3 className="font-bold text-sm tracking-tight">{proj.title}</h3>
-                  <p className="text-xs text-gray-500 font-mono">
+                  <p className="text-xs text-muted-foreground font-mono">
                     {proj.client} — {proj.project_date}
-                    {proj.is_featured && <span className="ml-2.5 text-[9px] bg-yellow-400/20 text-yellow-500 px-1.5 py-0.5 rounded font-bold font-sans">FEATURED</span>}
+                    {proj.is_featured && <Badge variant="secondary" className="ml-2.5 text-[9px] font-bold font-sans">FEATURED</Badge>}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                <button
+                <Button
+                  variant="outline"
+                  size="icon-sm"
                   onClick={() => startEditProject(proj)}
-                  className="p-2 border border-white/10 hover:border-white/30 text-gray-400 hover:text-white cursor-pointer"
                   title="Edit Project"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:text-destructive"
                   onClick={() => handleDeleteProject(proj.id)}
-                  className="p-2 border border-white/10 hover:border-red-500/30 text-gray-400 hover:text-red-500 cursor-pointer"
                   title="Delete Project"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -197,66 +201,64 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
 
       {/* Create/Edit Form */}
       {(isAddingProject || editingProject) && (
-        <form onSubmit={handleSaveProject} className="space-y-6 pt-4 border-t border-dashed border-white/10">
+        <form onSubmit={handleSaveProject} className="space-y-6 pt-4 border-t border-dashed">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-yellow-500">
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-primary">
               {isAddingProject ? "CREATE NEW CASE STUDY" : `EDITING: ${projectForm.title}`}
             </h3>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={closeForm}
-              className="text-xs text-gray-500 hover:text-white font-mono uppercase"
+              className="text-xs text-muted-foreground font-mono uppercase"
             >
               Cancel
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Project Title</label>
-              <input
+            <div className="space-y-2">
+              <Label className={labelCls}>Project Title</Label>
+              <Input
                 type="text" required
                 value={projectForm.title}
                 onChange={e => setProjectForm({ ...projectForm, title: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Project Slug (URL ID)</label>
-              <input
+            <div className="space-y-2">
+              <Label className={labelCls}>Project Slug (URL ID)</Label>
+              <Input
                 type="text" required
                 value={projectForm.slug}
                 onChange={e => setProjectForm({ ...projectForm, slug: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Client / Company Name</label>
-              <input
+            <div className="space-y-2">
+              <Label className={labelCls}>Client / Company Name</Label>
+              <Input
                 type="text" required
                 value={projectForm.client}
                 onChange={e => setProjectForm({ ...projectForm, client: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Project Date / Year</label>
-              <input
+            <div className="space-y-2">
+              <Label className={labelCls}>Project Date / Year</Label>
+              <Input
                 type="text" required
                 value={projectForm.project_date}
                 onChange={e => setProjectForm({ ...projectForm, project_date: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Category Folder</label>
+            <div className="space-y-2">
+              <Label className={labelCls}>Category Folder</Label>
               <select
                 value={projectForm.category_id}
                 onChange={e => setProjectForm({ ...projectForm, category_id: e.target.value })}
-                className={`w-full p-3.5 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
+                className="w-full h-9 px-3 border bg-transparent text-sm focus:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -266,17 +268,19 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Cover Image URL</label>
+            <div className="space-y-2">
+              <Label className={labelCls}>Cover Image URL</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text" required
+                  className="flex-1"
                   value={projectForm.cover_image_url}
                   onChange={e => setProjectForm({ ...projectForm, cover_image_url: e.target.value })}
-                  className={`flex-1 p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0"
                   onClick={() => {
                     setUploadError(null);
                     openCloudinaryUpload(
@@ -285,23 +289,24 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
                       (err) => { setUploadError('Cover image upload failed: ' + err); }
                     );
                   }}
-                  className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest border flex-shrink-0 cursor-pointer transition-all ${isLight ? "bg-black text-white border-black hover:bg-zinc-800" : "bg-white text-black border-white hover:bg-zinc-200"}`}
                 >
                   Upload
-                </button>
+                </Button>
               </div>
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Banner Image URL (Optional)</label>
+            <div className="space-y-2">
+              <Label className={labelCls}>Banner Image URL (Optional)</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
+                  className="flex-1"
                   value={projectForm.banner_image_url}
                   onChange={e => setProjectForm({ ...projectForm, banner_image_url: e.target.value })}
-                  className={`flex-1 p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0"
                   onClick={() => {
                     setUploadError(null);
                     openCloudinaryUpload(
@@ -310,155 +315,145 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
                       (err) => { setUploadError('Banner image upload failed: ' + err); }
                     );
                   }}
-                  className={`px-3 py-2 text-[10px] font-bold uppercase tracking-widest border flex-shrink-0 cursor-pointer transition-all ${isLight ? "bg-black text-white border-black hover:bg-zinc-800" : "bg-white text-black border-white hover:bg-zinc-200"}`}
                 >
                   Upload
-                </button>
+                </Button>
               </div>
             </div>
           </div>
           {uploadError && (
-            <div className="flex items-center gap-2 text-red-400 text-xs font-mono mt-1">
+            <div className="flex items-center gap-2 text-destructive text-xs font-mono mt-1">
               <CircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{uploadError}</span>
             </div>
           )}
 
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Video Embed URL (Optional — plain YouTube URL, not Cloudinary)</label>
-            <input
+          <div className="space-y-2">
+            <Label className={labelCls}>Video Embed URL (Optional — plain YouTube URL, not Cloudinary)</Label>
+            <Input
               type="text"
               value={projectForm.video_url}
               onChange={e => setProjectForm({ ...projectForm, video_url: e.target.value })}
-              className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Technologies (comma-separated, e.g. FIGMA, PREMIERE, VIDEO)</label>
-            <input
+          <div className="space-y-2">
+            <Label className={labelCls}>Technologies (comma-separated, e.g. FIGMA, PREMIERE, VIDEO)</Label>
+            <Input
               type="text"
               value={projectForm.technologies}
               onChange={e => setProjectForm({ ...projectForm, technologies: e.target.value })}
               placeholder="BRANDING, PACKAGING, ADOBE CC"
-              className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
             />
           </div>
 
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Intro Description Summary</label>
-            <textarea
+          <div className="space-y-2">
+            <Label className={labelCls}>Intro Description Summary</Label>
+            <Textarea
               rows={2} required
               value={projectForm.description}
               onChange={e => setProjectForm({ ...projectForm, description: e.target.value })}
-              className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-dashed border-white/10">
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Creative Process (Solution)</label>
-              <textarea
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-dashed">
+            <div className="space-y-2">
+              <Label className={labelCls}>Creative Process (Solution)</Label>
+              <Textarea
                 rows={4}
                 value={projectForm.creative_process}
                 onChange={e => setProjectForm({ ...projectForm, creative_process: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Key Challenges Faced</label>
-              <textarea
+            <div className="space-y-2">
+              <Label className={labelCls}>Key Challenges Faced</Label>
+              <Textarea
                 rows={4}
                 value={projectForm.challenges}
                 onChange={e => setProjectForm({ ...projectForm, challenges: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Final Results &amp; Impact</label>
-              <textarea
+            <div className="space-y-2">
+              <Label className={labelCls}>Final Results &amp; Impact</Label>
+              <Textarea
                 rows={4}
                 value={projectForm.final_result}
                 onChange={e => setProjectForm({ ...projectForm, final_result: e.target.value })}
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
           </div>
 
-          <div className="pt-4 border-t border-dashed border-white/10 space-y-4">
-            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">Client Testimonial (Optional)</h4>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Testimonial Quote</label>
-              <textarea
+          <div className="pt-4 border-t border-dashed space-y-4">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">Client Testimonial (Optional)</h4>
+            <div className="space-y-2">
+              <Label className={labelCls}>Testimonial Quote</Label>
+              <Textarea
                 rows={2}
                 value={projectForm.testimonial_quote}
                 onChange={e => setProjectForm({ ...projectForm, testimonial_quote: e.target.value })}
                 placeholder="e.g. Samuel's geometric precision completely redefined our presence. He brought a rare level of craft and vision..."
-                className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Testimonial Author Name</label>
-                <input
+              <div className="space-y-2">
+                <Label className={labelCls}>Testimonial Author Name</Label>
+                <Input
                   type="text"
                   value={projectForm.testimonial_author}
                   onChange={e => setProjectForm({ ...projectForm, testimonial_author: e.target.value })}
                   placeholder="e.g. Dr. Helena Vanta"
-                  className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider mb-2 font-mono text-gray-400">Testimonial Author Role / Position</label>
-                <input
+              <div className="space-y-2">
+                <Label className={labelCls}>Testimonial Author Role / Position</Label>
+                <Input
                   type="text"
                   value={projectForm.testimonial_role}
                   onChange={e => setProjectForm({ ...projectForm, testimonial_role: e.target.value })}
                   placeholder="e.g. Founder & Creative Director, Vanta Skin"
-                  className={`w-full p-3 border text-sm focus:outline-none rounded-none ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 p-4 border border-white/5">
+          <div className="flex items-center gap-6 p-4 border">
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="is_featured"
                 checked={projectForm.is_featured}
                 onChange={e => setProjectForm({ ...projectForm, is_featured: e.target.checked })}
-                className="w-4 h-4 rounded-none cursor-pointer"
+                className="w-4 h-4 cursor-pointer accent-primary"
               />
-              <label htmlFor="is_featured" className="text-xs uppercase font-mono cursor-pointer font-bold select-none">Feature on Homepage</label>
+              <Label htmlFor="is_featured" className="text-xs uppercase font-mono cursor-pointer font-bold select-none">Feature on Homepage</Label>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-[10px] uppercase font-mono font-bold">Display Order:</label>
-              <input
+              <Label className="text-[10px] uppercase font-mono font-bold">Display Order:</Label>
+              <Input
                 type="number"
                 value={projectForm.featured_order}
                 onChange={e => setProjectForm({ ...projectForm, featured_order: parseInt(e.target.value) || 1 })}
-                className={`w-16 p-1 border text-center font-mono ${isLight ? "bg-zinc-50 border-black/10 focus:border-black" : "bg-zinc-900 border-white/10 focus:border-white"}`}
+                className="w-16 h-8 px-1 text-center font-mono"
               />
             </div>
           </div>
 
           <div className="flex gap-4">
-            <button
+            <Button
               type="submit"
-              className={`px-6 py-3 text-xs font-bold uppercase tracking-widest cursor-pointer transition-all ${
-                isLight ? "bg-black text-white hover:bg-zinc-800" : "bg-white text-black hover:bg-zinc-200"
-              }`}
+              disabled={submitting}
+              className="px-6 py-5 text-xs font-bold uppercase tracking-widest"
             >
               {submitting ? "SAVING..." : "SAVE CASE STUDY"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
               onClick={closeForm}
-              className={`px-6 py-3 text-xs font-bold uppercase tracking-widest border border-white/10 hover:border-white/20 transition-all cursor-pointer`}
+              className="px-6 py-5 text-xs font-bold uppercase tracking-widest"
             >
               CANCEL
-            </button>
+            </Button>
           </div>
         </form>
       )}

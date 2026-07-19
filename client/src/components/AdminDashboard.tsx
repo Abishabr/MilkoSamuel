@@ -4,8 +4,6 @@ import { getMessages } from "../lib/api";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
 import {
-  Check,
-  CircleAlert,
   Sun,
   Moon,
   LogOut,
@@ -14,8 +12,20 @@ import {
   MessageSquare,
   Layers,
   Briefcase,
+  ExternalLink,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
+
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/src/components/ui/card";
+import { Badge } from "@/src/components/ui/badge";
+import { Toaster } from "@/src/components/ui/sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
 
 import {
   touchAdminSession,
@@ -66,10 +76,6 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
 
   // Active section in Admin Panel
   const [activeTab, setActiveTab] = useState<string>("settings");
-
-  // Toast / error banners shared across all tabs
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [writeError, setWriteError] = useState<string | null>(null);
 
   // Messages list state (fetched separately inside admin)
   const [messages, setMessages] = useState<any[]>([]);
@@ -144,36 +150,32 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
     };
   }, [isAuthenticated, handleSessionExpired]);
 
-  const showToast = (msg: string) => {
-    setSuccessMessage(msg);
-    setTimeout(() => setSuccessMessage(null), 3000);
-  };
-
-  const showWriteError = (msg: string) => {
-    setWriteError(msg);
-    setTimeout(() => setWriteError(null), 5000);
-  };
+  const showToast = (msg: string) => toast.success(msg);
+  const showWriteError = (msg: string) => toast.error(msg, { duration: 5000 });
 
   const handleLogout = async () => {
     clearAdminSession();
     await supabase.auth.signOut();
     setIsAuthenticated(false);
-    showToast("Logged out successfully");
+    toast.success("Logged out successfully");
   };
 
   // Login view
   if (!isAuthenticated) {
     return (
-      <AdminLogin
-        sessionExpired={sessionExpiredNotice}
-        onLoginSuccess={() => {
-          touchAdminSession();
-          setSessionExpiredNotice(false);
-          setIsAuthenticated(true);
-          showToast("Logged in successfully");
-        }}
-        onBackToPortfolio={onBackToPortfolio}
-      />
+      <>
+        <Toaster position="top-right" />
+        <AdminLogin
+          sessionExpired={sessionExpiredNotice}
+          onLoginSuccess={() => {
+            touchAdminSession();
+            setSessionExpiredNotice(false);
+            setIsAuthenticated(true);
+            toast.success("Logged in successfully");
+          }}
+          onBackToPortfolio={onBackToPortfolio}
+        />
+      </>
     );
   }
 
@@ -190,203 +192,150 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
 
   // Dashboard content
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isLight ? "bg-zinc-100 text-black" : "bg-[#080808] text-white"
-    }`}>
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-6 z-50 bg-black border border-white/20 text-white px-5 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs"
-          >
-            <Check className="w-4 h-4 text-green-400" />
-            <span>{successMessage.toUpperCase()}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <TooltipProvider>
+      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+        <Toaster position="top-right" />
 
-      {/* Write Error Banner */}
-      <AnimatePresence>
-        {writeError && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-6 z-50 bg-red-900/90 border border-red-500/50 text-red-200 px-5 py-3 shadow-2xl flex items-center gap-3 font-mono text-xs max-w-sm"
-          >
-            <CircleAlert className="w-4 h-4 text-red-400 flex-shrink-0" />
-            <span>{writeError}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Top header bar ─────────────────────────────────────────────── */}
-      <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors duration-300 ${
-        isLight ? "bg-white/90 border-black/10" : "bg-[#0c0c0c]/90 border-white/10"
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className={`w-8 h-8 flex items-center justify-center font-extrabold text-sm border flex-shrink-0 ${
-              isLight ? "bg-black text-white border-black" : "bg-white text-black border-white"
-            }`}>
-              SM
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-extrabold uppercase tracking-wider truncate">Admin Console</p>
-              <p className={`text-[10px] font-mono uppercase tracking-widest truncate ${isLight ? "text-gray-500" : "text-gray-400"}`}>
-                Samuel Milko Portfolio
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Session countdown */}
-            <div
-              title="Time until automatic sign-out (activity extends it)"
-              className={`hidden sm:flex items-center gap-2 px-3 py-2 border font-mono text-[11px] tracking-wider ${
-                remainingMs < 5 * 60 * 1000
-                  ? "border-red-500/50 text-red-500"
-                  : isLight ? "border-black/10 text-gray-600" : "border-white/10 text-gray-400"
-              }`}
-            >
-              <Timer className="w-3.5 h-3.5" />
-              {formatRemaining(remainingMs)}
-            </div>
-
-            {/* Admin-only theme toggle */}
-            <button
-              onClick={toggleTheme}
-              title={isLight ? "Switch admin to dark mode" : "Switch admin to light mode"}
-              className={`p-2.5 border transition-all cursor-pointer ${
-                isLight
-                  ? "border-black/10 hover:border-black text-black hover:bg-black/5"
-                  : "border-white/10 hover:border-white text-white hover:bg-white/5"
-              }`}
-            >
-              {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-            </button>
-
-            {onBackToPortfolio && (
-              <button
-                onClick={onBackToPortfolio}
-                className={`hidden md:block px-4 py-2.5 border text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
-                  isLight
-                    ? "border-black/10 hover:border-black text-gray-700 hover:text-black hover:bg-black/5"
-                    : "border-white/10 hover:border-white text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                View Site
-              </button>
-            )}
-
-            <button
-              onClick={handleLogout}
-              className={`px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer border ${
-                isLight
-                  ? "bg-black text-white border-black hover:bg-zinc-800"
-                  : "bg-white text-black border-white hover:bg-zinc-200"
-              }`}
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* ── Overview stat cards ───────────────────────────────────────── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {statCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <button
-                key={card.label}
-                onClick={() => setActiveTab(card.tab)}
-                className={`group p-5 border text-left transition-all duration-200 cursor-pointer ${
-                  isLight
-                    ? "bg-white border-black/10 hover:border-black hover:shadow-lg"
-                    : "bg-[#111111] border-white/10 hover:border-white/40 hover:bg-[#161616]"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <p className={`text-[10px] font-bold uppercase tracking-widest font-mono ${
-                    isLight ? "text-gray-500" : "text-gray-400"
-                  }`}>
-                    {card.label}
-                  </p>
-                  <Icon className={`w-4 h-4 transition-colors ${
-                    isLight ? "text-gray-400 group-hover:text-black" : "text-gray-500 group-hover:text-white"
-                  }`} />
-                </div>
-                <p className="text-3xl font-extrabold tracking-tighter mt-3 font-sans">
-                  {card.value}
+        {/* ── Top header bar ─────────────────────────────────────────────── */}
+        <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md transition-colors duration-300">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 flex items-center justify-center font-extrabold text-sm bg-primary text-primary-foreground flex-shrink-0">
+                SM
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-extrabold uppercase tracking-wider truncate">Admin Console</p>
+                <p className="text-[10px] font-mono uppercase tracking-widest truncate text-muted-foreground">
+                  Samuel Milko Portfolio
                 </p>
-              </button>
-            );
-          })}
-        </div>
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left column navigation panel */}
-          <AdminSidebar
-            activeTab={activeTab}
-            unreadCount={unreadCount}
-            onTabChange={setActiveTab}
-            onLogout={handleLogout}
-            onBackToPortfolio={onBackToPortfolio}
-          />
+            <div className="flex items-center gap-2">
+              {/* Session countdown */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge
+                    variant={remainingMs < 5 * 60 * 1000 ? "destructive" : "outline"}
+                    className="hidden sm:flex items-center gap-2 px-3 py-2 font-mono text-[11px] tracking-wider"
+                  >
+                    <Timer className="w-3.5 h-3.5" />
+                    {formatRemaining(remainingMs)}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Time until automatic sign-out — activity extends it
+                </TooltipContent>
+              </Tooltip>
 
-          {/* Right column main content dashboard view */}
-          <div className="lg:col-span-9">
-            <div className={`border min-h-[600px] transition-colors duration-300 ${
-              isLight ? "bg-white border-black/10 text-black" : "bg-[#111111] border-white/10 text-white"
-            }`}>
-              {/* Section heading strip */}
-              <div className={`px-8 py-5 border-b flex items-center justify-between ${
-                isLight ? "border-black/10" : "border-white/10"
-              }`}>
-                <div>
-                  <h1 className="text-lg font-extrabold tracking-tighter uppercase font-sans">
-                    {heading.title}
-                  </h1>
-                  <p className={`text-[10px] font-mono uppercase tracking-widest mt-0.5 ${
-                    isLight ? "text-gray-500" : "text-gray-400"
-                  }`}>
-                    {heading.subtitle}
-                  </p>
+              {/* Admin-only theme toggle */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={toggleTheme}>
+                    {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {isLight ? "Switch admin to dark mode" : "Switch admin to light mode"}
+                </TooltipContent>
+              </Tooltip>
+
+              {onBackToPortfolio && (
+                <Button
+                  variant="outline"
+                  onClick={onBackToPortfolio}
+                  className="hidden md:flex text-[10px] font-bold uppercase tracking-widest"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View Site
+                </Button>
+              )}
+
+              <Button onClick={handleLogout} className="text-[10px] font-bold uppercase tracking-widest">
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* ── Overview stat cards ───────────────────────────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {statCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <Card
+                  key={card.label}
+                  onClick={() => setActiveTab(card.tab)}
+                  className="group cursor-pointer py-0 transition-all duration-200 hover:border-foreground/40 hover:shadow-lg"
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between">
+                      <p className="text-[10px] font-bold uppercase tracking-widest font-mono text-muted-foreground">
+                        {card.label}
+                      </p>
+                      <Icon className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                    </div>
+                    <p className="text-3xl font-extrabold tracking-tighter mt-3 font-sans">
+                      {card.value}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left column navigation panel */}
+            <AdminSidebar
+              activeTab={activeTab}
+              unreadCount={unreadCount}
+              onTabChange={setActiveTab}
+              onLogout={handleLogout}
+              onBackToPortfolio={onBackToPortfolio}
+            />
+
+            {/* Right column main content dashboard view */}
+            <div className="lg:col-span-9">
+              <Card className="min-h-[600px] py-0 gap-0">
+                {/* Section heading strip */}
+                <div className="px-8 py-5 border-b flex items-center justify-between">
+                  <div>
+                    <h1 className="text-lg font-extrabold tracking-tighter uppercase font-sans">
+                      {heading.title}
+                    </h1>
+                    <p className="text-[10px] font-mono uppercase tracking-widest mt-0.5 text-muted-foreground">
+                      {heading.subtitle}
+                    </p>
+                  </div>
+                  <span className="hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    Live
+                  </span>
                 </div>
-                <span className={`hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest ${
-                  isLight ? "text-gray-500" : "text-gray-400"
-                }`}>
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  Live
-                </span>
-              </div>
 
-              <div className="p-8">
-                {activeTab === "settings" && <SettingsTab {...tabProps} />}
-                {activeTab === "projects" && <ProjectsTab {...tabProps} />}
-                {activeTab === "categories" && <CategoriesTab {...tabProps} />}
-                {activeTab === "services" && <ServicesSkillsTab {...tabProps} />}
-                {activeTab === "process" && <ProcessPhilosophyTab {...tabProps} />}
-                {activeTab === "experiences" && <ExperiencesSocialsTab {...tabProps} />}
-                {activeTab === "messages" && (
-                  <MessagesTab
-                    messages={messages}
-                    loadingMessages={loadingMessages}
-                    onRefresh={fetchMessagesData}
-                    showToast={showToast}
-                  />
-                )}
-              </div>
+                <div className="p-8">
+                  {activeTab === "settings" && <SettingsTab {...tabProps} />}
+                  {activeTab === "projects" && <ProjectsTab {...tabProps} />}
+                  {activeTab === "categories" && <CategoriesTab {...tabProps} />}
+                  {activeTab === "services" && <ServicesSkillsTab {...tabProps} />}
+                  {activeTab === "process" && <ProcessPhilosophyTab {...tabProps} />}
+                  {activeTab === "experiences" && <ExperiencesSocialsTab {...tabProps} />}
+                  {activeTab === "messages" && (
+                    <MessagesTab
+                      messages={messages}
+                      loadingMessages={loadingMessages}
+                      onRefresh={fetchMessagesData}
+                      showToast={showToast}
+                    />
+                  )}
+                </div>
+              </Card>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }
