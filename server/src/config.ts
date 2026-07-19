@@ -26,7 +26,7 @@ export const config = {
   // CLIENT_URL=http://localhost:5173,https://milkosamuel.vercel.app
   clientOrigins: (process.env.CLIENT_URL || 'http://localhost:5173')
     .split(',')
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
     .filter(Boolean),
   isProduction: process.env.NODE_ENV === 'production',
 };
