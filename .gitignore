@@ -34,3 +34,4 @@ Thumbs.db
 *.tgz
 .kiro/
 .aistudio/
+.kiro/specs/
