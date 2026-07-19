@@ -47,7 +47,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
               samuel milko
             </p>
             <p className={`text-[10px] uppercase tracking-tighter ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               Graphics designer &amp; video editor
             </p>
@@ -60,18 +60,19 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`transition-colors cursor-pointer relative py-2 ${
-                activeTab === item.id 
-                  ? (isLight ? "text-black" : "text-white") 
-                  : (isLight ? "text-gray-500 hover:text-black" : "text-gray-400 hover:text-white")
+              className={`transition-colors cursor-pointer relative py-2 group ${
+                activeTab === item.id
+                  ? (isLight ? "text-black" : "text-white")
+                  : (isLight ? "text-gray-600 hover:text-black" : "text-gray-400 hover:text-white")
               }`}
             >
               {item.label}
-              {activeTab === item.id && (
-                <span className={`absolute bottom-0 left-0 w-full h-[2px] transition-all duration-300 ${
+              {/* Underline: full on active, grows from left on hover */}
+              <span
+                className={`absolute bottom-0 left-0 h-[2px] transition-all duration-300 ${
                   isLight ? "bg-black" : "bg-white"
-                }`} />
-              )}
+                } ${activeTab === item.id ? "w-full" : "w-0 group-hover:w-full"}`}
+              />
             </button>
           ))}
         </nav>
@@ -151,9 +152,9 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
                     setIsOpen(false);
                   }}
                   className={`text-xl font-extrabold uppercase tracking-widest transition-all cursor-pointer ${
-                    activeTab === item.id 
-                      ? (isLight ? "text-black scale-105" : "text-white scale-105") 
-                      : (isLight ? "text-gray-500 hover:text-black" : "text-gray-400 hover:text-white")
+                    activeTab === item.id
+                      ? (isLight ? "text-black scale-105" : "text-white scale-105")
+                      : (isLight ? "text-gray-600 hover:text-black" : "text-gray-400 hover:text-white")
                   }`}
                 >
                   {item.label}

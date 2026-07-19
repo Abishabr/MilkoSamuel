@@ -31,6 +31,8 @@ interface CapabilitiesProps {
   onJournalClick?: () => void;
 }
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 // Map string icon names to Lucide elements
 const iconMap: Record<string, React.ComponentType<any>> = {
   PenTool,
@@ -80,13 +82,18 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
       <div className="pt-32 pb-12">
         {/* Services Hero Header */}
         <section className="px-6 lg:px-16 max-w-7xl mx-auto py-12">
-          <div className="flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE }}
+            className="flex flex-col"
+          >
             <span className={`font-mono text-xs tracking-widest uppercase self-start px-3 py-1 transition-colors duration-300 ${
               isLight ? "bg-black/5 text-black" : "bg-white/5 text-white"
             }`}>
               Our Capabilities
             </span>
-            <h1 className={`text-4xl md:text-7xl font-extrabold uppercase leading-none mt-6 tracking-tighter ${
+            <h1 className={`text-4xl md:text-7xl font-extrabold uppercase leading-none mt-6 tracking-display ${
               isLight ? "text-black" : "text-white"
             }`}>
               CRAFTING BRAND <br /> ARCHITECTURES.
@@ -96,7 +103,7 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
             }`}>
               A comprehensive suite of high-fidelity creative services designed to elevate your brand presence through extreme mathematical precision, robust strategy, and dark high-contrast aesthetic rigor.
             </p>
-          </div>
+          </motion.div>
         </section>
 
         {/* Services Grid */}
@@ -109,10 +116,10 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
               return (
                 <motion.div
                   key={service.id || index}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.6, delay: index * 0.07, ease: EASE }}
                   className={`p-10 border-r border-b flex flex-col gap-6 group transition-all duration-300 ${
                     isLight ? "border-black/10 hover:bg-black/5" : "border-white/10 hover:bg-white/5"
                   }`}
@@ -127,7 +134,7 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
                       {service.name}
                     </h3>
                     <p className={`text-sm leading-relaxed font-sans transition-colors ${
-                      isLight ? "text-gray-600" : "text-gray-500"
+                      isLight ? "text-gray-600" : "text-gray-400"
                     }`}>
                       {service.description}
                     </p>
@@ -143,8 +150,14 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
           isLight ? "border-black/10 bg-zinc-200" : "border-white/10 bg-[#262626]"
         } overflow-hidden`}>
           <div className="max-w-7xl mx-auto px-6 lg:px-16 py-20 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="flex flex-col gap-8">
-              <h2 className={`text-3xl md:text-5xl font-extrabold uppercase tracking-tighter leading-[1.1] ${
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="flex flex-col gap-8"
+            >
+              <h2 className={`text-3xl md:text-5xl font-extrabold uppercase tracking-display leading-[1.1] ${
                 isLight ? "text-black" : "text-white"
               }`}>
                 Ready to refine <br /> your brand?
@@ -171,21 +184,26 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
                   View Journal
                 </button>
               </div>
-            </div>
-            
-            <div className={`relative h-[300px] overflow-hidden border transition-colors ${
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, delay: 0.12, ease: EASE }}
+              className={`relative h-[300px] overflow-hidden border transition-colors ${
               isLight ? "border-black/10" : "border-white/5"
             }`}>
-              <img 
-                alt="Brutalist architectural detail" 
-                className="w-full h-full object-cover grayscale opacity-60 hover:scale-105 hover:opacity-80 transition-all duration-1000 ease-out" 
+              <img
+                alt="Brutalist architectural detail"
+                className="w-full h-full object-cover grayscale hover:grayscale-0 opacity-60 hover:scale-105 hover:opacity-80 transition-all duration-1000 ease-out"
                 referrerPolicy="no-referrer"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVXsVo7rbGESsGF3-0ykLaVNQ6CI3wTH5Cw9TjayRBYG0H-JPhqy67oEt0spd_0fCF9GUP-35e3R-kRZtObe-LU98yavS7ouPJ7webbK1yKy5wFo5Q61BnJKQ4N5ERzbptuSltzN9fm0XkyMaqayIODeUyWe9J9gvPxF1muyiyOMG81a6jNmGlc0MLrYlnKgZaghmWR8GYK4mfDGIyl5gM2JOu1u_xJv96JoRH4qPcpKycAI0MIHatd02Z4PLJdiAmGrzavnQ6DQ"
               />
               <div className={`absolute inset-0 bg-gradient-to-r pointer-events-none transition-all duration-300 ${
                 isLight ? "from-zinc-200" : "from-[#262626]"
               } to-transparent`} />
-            </div>
+            </motion.div>
           </div>
         </section>
       </div>
@@ -199,21 +217,21 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
     }`} id="capabilities-quick">
       <div className="max-w-7xl mx-auto px-6">
         <p className={`text-xs font-bold uppercase tracking-[0.3em] mb-16 font-mono ${
-          isLight ? "text-gray-500" : "text-gray-400"
+          isLight ? "text-gray-600" : "text-gray-400"
         }`}>
           Capabilities
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-5 gap-12">
           {activeServices.slice(0, 5).map((service, idx) => {
             const IconComponent = iconMap[service.icon] || PenTool;
             return (
               <motion.div
                 key={service.id || idx}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: idx * 0.08, ease: EASE }}
                 className="space-y-6"
               >
                 <IconComponent className={`w-8 h-8 transition-colors ${
@@ -226,7 +244,7 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
                     {service.name}
                   </h4>
                   <p className={`text-xs leading-relaxed font-sans ${
-                    isLight ? "text-gray-600" : "text-gray-500"
+                    isLight ? "text-gray-600" : "text-gray-400"
                   }`}>
                     {service.description}
                   </p>

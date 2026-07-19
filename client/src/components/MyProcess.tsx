@@ -3,6 +3,8 @@ import { motion } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 export default function MyProcess() {
   const { theme } = useTheme();
   const isLight = theme === "light";
@@ -24,10 +26,16 @@ export default function MyProcess() {
     }`} id="process-section">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="flex flex-col md:flex-row md:items-end justify-between mb-20"
+        >
           <div className="max-w-md">
             <p className={`text-xs font-bold uppercase tracking-widest mb-4 font-mono ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               My Process
             </p>
@@ -37,11 +45,11 @@ export default function MyProcess() {
               A Clear Path To Success.
             </h2>
           </div>
-        </div>
+        </motion.div>
 
         {/* Timeline */}
         <div className="relative pt-6">
-          {/* Connecting Line (Desktop only) - Perfectly aligned to center of 40px circle (pt-6 padding + 20px half of circle = 44px) */}
+          {/* Connecting Line (Desktop only) - aligned to center of the 40px number marker (pt-6 padding + 20px = 44px) */}
           <div className={`absolute top-[44px] left-0 w-full h-[1px] hidden md:block transition-colors duration-300 ${
             isLight ? "bg-gray-200" : "bg-white/10"
           }`} />
@@ -50,14 +58,14 @@ export default function MyProcess() {
             {steps.map((step, idx) => (
               <motion.div
                 key={step.id || step.step || idx}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: idx * 0.08, ease: EASE }}
                 className="relative flex flex-col items-start"
               >
-                {/* Number Circle */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold mb-8 shadow-md hover:scale-110 transition-all duration-300 ${
+                {/* Number Marker */}
+                <div className={`w-10 h-10 flex items-center justify-center text-xs font-mono font-bold mb-8 transition-colors duration-300 ${
                   isLight ? "bg-black text-white" : "bg-white text-black"
                 }`}>
                   {step.number || step.step}

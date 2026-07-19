@@ -4,6 +4,8 @@ import { motion } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 interface FeaturedWorkProps {
   onSelectProject: (project: Project) => void;
   onViewAll: () => void;
@@ -40,7 +42,7 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
         <div className="flex justify-between items-end mb-16">
           <div>
             <h2 className={`text-xs font-bold uppercase tracking-[0.3em] mb-3 font-mono ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               Featured Work
             </h2>
@@ -65,11 +67,20 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
             return (
               <motion.div
                 key={project.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: idx * 0.08, ease: EASE }}
                 onClick={() => onSelectProject(project)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onSelectProject(project);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`View case study: ${project.title}`}
                 className="group cursor-pointer"
               >
                 {/* Image Container */}
@@ -78,7 +89,7 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
                 }`}>
                   <img 
                     alt={project.title} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" 
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ease-out"
                     referrerPolicy="no-referrer"
                     src={projectImg}
                   />
@@ -100,7 +111,7 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
                       {project.title}
                     </h3>
                     <p className={`text-xs uppercase tracking-widest font-mono mt-1 ${
-                      isLight ? "text-gray-500" : "text-gray-400"
+                      isLight ? "text-gray-600" : "text-gray-400"
                     }`}>
                       {project.client}
                     </p>
@@ -113,13 +124,13 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
                 </div>
 
                 {/* View Link */}
-                <button className={`mt-4 block text-xs font-bold uppercase tracking-widest transition-all ${
-                  isLight 
-                    ? "text-gray-600 group-hover:text-black group-hover:underline underline-offset-4" 
+                <span aria-hidden="true" className={`mt-4 block text-xs font-bold uppercase tracking-widest transition-all ${
+                  isLight
+                    ? "text-gray-600 group-hover:text-black group-hover:underline underline-offset-4"
                     : "text-gray-400 group-hover:text-white group-hover:underline underline-offset-4"
                 }`}>
-                  View Project 
-                </button>
+                  View Project
+                </span>
               </motion.div>
             );
           })}

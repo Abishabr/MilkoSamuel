@@ -7,6 +7,8 @@ interface AboutMeProps {
   onLearnMore: () => void;
 }
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 export default function AboutMe({ onLearnMore }: AboutMeProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
@@ -36,19 +38,19 @@ I help forward-thinking brands and ambitious creators turn chaotic ideas into cl
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Left Column: Story */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: EASE }}
             className="w-full"
           >
             <p className={`text-xs font-bold uppercase tracking-widest mb-6 font-mono ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               About Me
             </p>
-            <h2 className={`text-4xl md:text-5xl font-extrabold uppercase leading-[1.0] tracking-tighter mb-8 ${
+            <h2 className={`text-4xl md:text-5xl font-extrabold uppercase leading-[1.0] tracking-display mb-8 ${
               isLight ? "text-black" : "text-white"
             }`}>
               Design is thinking <br /> made visible.
@@ -76,15 +78,15 @@ I help forward-thinking brands and ambitious creators turn chaotic ideas into cl
           </motion.div>
 
           {/* Right Column: Philosophy */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
             className="w-full"
           >
             <p className={`text-xs font-bold uppercase tracking-widest mb-6 lg:text-left font-mono ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               My Philosophy
             </p>
@@ -93,11 +95,15 @@ I help forward-thinking brands and ambitious creators turn chaotic ideas into cl
                 const isLast = index === activePhilosophy.length - 1;
                 const formattedIndex = String(index + 1).padStart(2, "0");
                 return (
-                  <div 
-                    key={item.id || index} 
+                  <motion.div
+                    key={item.id || index}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ duration: 0.6, delay: 0.2 + index * 0.08, ease: EASE }}
                     className={`pb-6 transition-colors ${
-                      !isLast 
-                        ? (isLight ? "border-b border-black/10 hover:border-black/30" : "border-b border-white/10 hover:border-white/30") 
+                      !isLast
+                        ? (isLight ? "border-b border-black/10 hover:border-black/30" : "border-b border-white/10 hover:border-white/30")
                         : ""
                     }`}
                   >
@@ -107,11 +113,11 @@ I help forward-thinking brands and ambitious creators turn chaotic ideas into cl
                       {formattedIndex}. {item.title}
                     </h4>
                     <p className={`text-sm leading-relaxed ${
-                      isLight ? "text-gray-500" : "text-gray-400"
+                      isLight ? "text-gray-600" : "text-gray-400"
                     }`}>
                       {item.description}
                     </p>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

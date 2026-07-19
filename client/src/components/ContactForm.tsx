@@ -10,6 +10,8 @@ export { validateContactForm } from "../lib/validateContactForm";
 import { validateContactForm } from "../lib/validateContactForm";
 import type { ContactFormData, ContactFormErrors } from "../lib/validateContactForm";
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function ContactForm() {
@@ -83,16 +85,18 @@ export default function ContactForm() {
     }`;
 
   const labelClass = `block text-[10px] font-mono tracking-widest uppercase mb-2 transition-colors font-bold ${
-    isLight ? "text-gray-500 group-focus-within:text-black" : "text-gray-400 group-focus-within:text-white"
+    isLight ? "text-gray-600 group-focus-within:text-black" : "text-gray-400 group-focus-within:text-white"
   }`;
 
   const inputClass = `w-full bg-transparent border-none p-0 text-xl focus:ring-0 focus:outline-none font-sans ${
-    isLight ? "text-black placeholder-gray-300" : "text-white placeholder-gray-600"
+    isLight ? "text-black placeholder-gray-500" : "text-white placeholder-gray-400"
   }`;
+
+  const errorText = `mt-1 text-xs font-mono ${isLight ? "text-red-600" : "text-red-400"}`;
 
   const inlineError = (msg: string | undefined) =>
     msg ? (
-      <p className="mt-1 text-xs text-red-500 font-mono" role="alert">
+      <p className={errorText} role="alert">
         {msg}
       </p>
     ) : null;
@@ -104,6 +108,7 @@ export default function ContactForm() {
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE }}
           className={`text-4xl md:text-8xl font-extrabold uppercase mb-6 leading-none tracking-tighter select-none transition-colors duration-300 ${
             isLight ? "text-black" : "text-white"
           }`}
@@ -111,9 +116,9 @@ export default function ContactForm() {
           START A <br className="md:hidden" /> CONVERSATION
         </motion.h1>
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
           className={`text-sm md:text-base max-w-2xl mx-auto leading-relaxed font-sans transition-colors duration-300 ${
             isLight ? "text-gray-600" : "text-gray-400"
           }`}
@@ -142,18 +147,21 @@ export default function ContactForm() {
               {!submitted ? (
                 <motion.form
                   key="contact-form"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: EASE }}
                   onSubmit={handleSubmit}
                   className="space-y-12"
                   noValidate
                 >
                   {/* Name */}
                   <div className={fieldBorder(!!fieldErrors.name)}>
-                    <label className={labelClass}>Name</label>
+                    <label htmlFor="contact-name" className={labelClass}>Name</label>
                     <input
+                      id="contact-name"
                       type="text"
+                      autoComplete="name"
                       placeholder="Your full name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -163,7 +171,7 @@ export default function ContactForm() {
                       aria-describedby={fieldErrors.name ? "error-name" : undefined}
                     />
                     {fieldErrors.name && (
-                      <p id="error-name" className="mt-1 text-xs text-red-500 font-mono" role="alert">
+                      <p id="error-name" className={errorText} role="alert">
                         {fieldErrors.name}
                       </p>
                     )}
@@ -171,10 +179,12 @@ export default function ContactForm() {
 
                   {/* Email */}
                   <div className={fieldBorder(!!fieldErrors.email)}>
-                    <label className={labelClass}>Email Address</label>
+                    <label htmlFor="contact-email" className={labelClass}>Email Address</label>
                     <input
+                      id="contact-email"
                       type="email"
-                      placeholder="milkosamuel470@gmail.com"
+                      autoComplete="email"
+                      placeholder="you@example.com"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       disabled={submitting}
@@ -183,7 +193,7 @@ export default function ContactForm() {
                       aria-describedby={fieldErrors.email ? "error-email" : undefined}
                     />
                     {fieldErrors.email && (
-                      <p id="error-email" className="mt-1 text-xs text-red-500 font-mono" role="alert">
+                      <p id="error-email" className={errorText} role="alert">
                         {fieldErrors.email}
                       </p>
                     )}
@@ -191,8 +201,9 @@ export default function ContactForm() {
 
                   {/* Subject Select */}
                   <div className={fieldBorder(!!fieldErrors.subject)}>
-                    <label className={labelClass}>Subject</label>
+                    <label htmlFor="contact-subject" className={labelClass}>Subject</label>
                     <select
+                      id="contact-subject"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       disabled={submitting}
@@ -208,7 +219,7 @@ export default function ContactForm() {
                       <option className="bg-white text-black">General Inquiry</option>
                     </select>
                     {fieldErrors.subject && (
-                      <p id="error-subject" className="mt-1 text-xs text-red-500 font-mono" role="alert">
+                      <p id="error-subject" className={errorText} role="alert">
                         {fieldErrors.subject}
                       </p>
                     )}
@@ -216,30 +227,34 @@ export default function ContactForm() {
 
                   {/* Message Textarea */}
                   <div className={fieldBorder(!!fieldErrors.message)}>
-                    <label className={labelClass}>Message</label>
+                    <label htmlFor="contact-message" className={labelClass}>Message</label>
                     <textarea
+                      id="contact-message"
                       rows={4}
-                      placeholder="Tell me about your vision"
+                      placeholder="Tell me about your project — goals, timeline, budget"
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       disabled={submitting}
                       className={`w-full bg-transparent border-none p-0 text-xl focus:ring-0 focus:outline-none resize-none font-sans ${
-                        isLight ? "text-black placeholder-gray-300" : "text-white placeholder-gray-600"
+                        isLight ? "text-black placeholder-gray-500" : "text-white placeholder-gray-400"
                       }`}
                       aria-invalid={!!fieldErrors.message}
                       aria-describedby={fieldErrors.message ? "error-message" : undefined}
                     />
                     {fieldErrors.message && (
-                      <p id="error-message" className="mt-1 text-xs text-red-500 font-mono" role="alert">
+                      <p id="error-message" className={errorText} role="alert">
                         {fieldErrors.message}
                       </p>
                     )}
                   </div>
 
-                  {/* Supabase-level error */}
+                  {/* Submission error */}
                   {submitError && (
-                    <p className="text-sm text-red-500 font-mono" role="alert">
-                      {submitError}
+                    <p
+                      className={`text-sm font-mono ${isLight ? "text-red-600" : "text-red-400"}`}
+                      role="alert"
+                    >
+                      Your message didn't send — {submitError} Please try again, or email me directly at milkosamuel470@gmail.com.
                     </p>
                   )}
 
@@ -247,27 +262,30 @@ export default function ContactForm() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className={`w-full md:w-auto px-12 py-5 text-xs font-mono font-bold tracking-widest transition-all duration-300 disabled:opacity-50 active:scale-95 cursor-pointer border ${
+                    aria-busy={submitting}
+                    className={`w-full md:w-auto px-12 py-5 text-xs font-mono font-bold tracking-widest transition-all duration-300 disabled:opacity-50 disabled:cursor-wait active:scale-95 cursor-pointer border ${
                       isLight
                         ? "bg-black border-black text-white hover:bg-zinc-800"
                         : "bg-white border-white text-black hover:bg-zinc-200"
                     }`}
                   >
-                    {submitting ? "SENDING MESSAGE..." : "SEND MESSAGE"}
+                    {submitting ? "SENDING…" : "SEND MESSAGE"}
                   </button>
                 </motion.form>
               ) : (
                 <motion.div
                   key="success-overlay"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5, ease: EASE }}
                   className={`py-16 text-center flex flex-col items-center justify-center h-full ${
                     isLight ? "text-black" : "text-white"
                   }`}
+                  role="status"
                 >
                   <CheckCircle
-                    className={`w-16 h-16 mb-6 animate-bounce ${isLight ? "text-black" : "text-white"}`}
+                    className={`w-16 h-16 mb-6 ${isLight ? "text-black" : "text-white"}`}
                     strokeWidth={1}
                   />
                   <h3
@@ -275,14 +293,14 @@ export default function ContactForm() {
                       isLight ? "text-black" : "text-white"
                     }`}
                   >
-                    MESSAGE SENT SUCCESSFULLY
+                    MESSAGE SENT
                   </h3>
                   <p
                     className={`font-sans max-w-md mx-auto mb-8 text-sm leading-relaxed ${
                       isLight ? "text-gray-600" : "text-gray-400"
                     }`}
                   >
-                    Thank you for reaching out. I will review your message and reply within 24 business hours.
+                    Thanks for reaching out — I'll reply within 24 business hours.
                   </p>
                   <button
                     onClick={handleReset}
@@ -310,7 +328,7 @@ export default function ContactForm() {
             >
               <div className="space-y-8 text-white">
                 <div>
-                  <span className="font-mono text-[10px] tracking-widest text-gray-500 block mb-2 uppercase font-bold">
+                  <span className="font-mono text-[10px] tracking-widest text-gray-400 block mb-2 uppercase font-bold">
                     EMAIL
                   </span>
                   <a
@@ -321,7 +339,7 @@ export default function ContactForm() {
                   </a>
                 </div>
                 <div>
-                  <span className="font-mono text-[10px] tracking-widest text-gray-500 block mb-2 uppercase font-bold">
+                  <span className="font-mono text-[10px] tracking-widest text-gray-400 block mb-2 uppercase font-bold">
                     PHONE
                   </span>
                   <a
@@ -332,34 +350,32 @@ export default function ContactForm() {
                   </a>
                 </div>
                 <div>
-                  <span className="font-mono text-[10px] tracking-widest text-gray-500 block mb-2 uppercase font-bold">
+                  <span className="font-mono text-[10px] tracking-widest text-gray-400 block mb-2 uppercase font-bold">
                     LOCATION
                   </span>
                   <div className="text-xl md:text-2xl font-extrabold font-sans">
-                    Adiss Ababa, Ethiopia
+                    Addis Ababa, Ethiopia
                   </div>
                 </div>
               </div>
 
-              {/* Micro circular buttons */}
+              {/* Micro square buttons */}
               <div className="mt-12 flex gap-4">
                 <a
-                  href="#telegram"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.open("https://t.me/milkosamuel470", "_blank");
-                  }}
-                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all text-white shadow cursor-pointer"
+                  href="https://t.me/milkosamuel470"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Message me on Telegram"
+                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white hover:-translate-y-0.5 transition-all duration-300 text-white cursor-pointer"
                 >
                   <Share2 className="w-4 h-4" />
                 </a>
                 <a
-                  href="#whatsapp"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.open("https://wa.me/251902782218", "_blank");
-                  }}
-                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all text-white shadow cursor-pointer"
+                  href="https://wa.me/251902782218"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Message me on WhatsApp"
+                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white hover:-translate-y-0.5 transition-all duration-300 text-white cursor-pointer"
                 >
                   <Globe className="w-4 h-4" />
                 </a>
@@ -369,7 +385,8 @@ export default function ContactForm() {
                     e.preventDefault();
                     alert("Redirecting to LinkedIn...");
                   }}
-                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white transition-all text-white shadow cursor-pointer"
+                  aria-label="Connect on LinkedIn"
+                  className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black hover:border-white hover:-translate-y-0.5 transition-all duration-300 text-white cursor-pointer"
                 >
                   <Linkedin className="w-4 h-4" />
                 </a>

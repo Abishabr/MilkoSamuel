@@ -183,4 +183,43 @@ body {
   background: var(--text-secondary);
 }
 
+/* ── Craft floor ─────────────────────────────────────────────────────────
+   Typography, focus, and motion baselines applied site-wide. */
+
+/* Even line lengths on headings; fewer orphans in prose */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+
+/* Visible keyboard focus — monochrome ring that follows the theme */
+:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+
+/* Display type: -0.04em floor so letters never touch at large sizes */
+.tracking-display {
+  letter-spacing: -0.04em;
+}
+
+/* Exponential ease-out for entrances and hovers */
+:root {
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reduced motion: collapse animations and transitions to near-instant */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 

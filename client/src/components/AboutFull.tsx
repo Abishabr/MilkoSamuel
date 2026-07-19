@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Download, Grid, Image, Sparkles, Video, Play, Sliders } from "lucide-react";
 import { softwareEcosystem } from "../data";
 import { motion } from "motion/react";
@@ -8,6 +8,8 @@ import { useData } from "../context/DataContext";
 interface AboutFullProps {
   onStartProject: () => void;
 }
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Grid,
@@ -21,14 +23,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 export default function AboutFull({ onStartProject }: AboutFullProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const [animateBars, setAnimateBars] = useState(false);
   const { settings, skills: dynamicSkills, projects } = useData();
-
-  useEffect(() => {
-    // Trigger animation of skill percentage bars
-    const timer = setTimeout(() => setAnimateBars(true), 200);
-    return () => clearTimeout(timer);
-  }, []);
 
   const years = settings?.years_experience || "10+";
   // Projects Completed is derived live from the database — the number of
@@ -64,13 +59,18 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
       <section className="max-w-7xl mx-auto px-6 md:px-16 py-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
           {/* Biography text */}
-          <div className="md:col-span-7">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: EASE }}
+            className="md:col-span-7"
+          >
             <span className={`font-mono text-xs block mb-4 tracking-widest uppercase ${
-              isLight ? "text-gray-500" : "text-gray-400"
+              isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               Biography
             </span>
-            <h1 className={`text-4xl md:text-7xl font-extrabold mb-8 leading-none tracking-tighter ${
+            <h1 className={`text-4xl md:text-7xl font-extrabold mb-8 leading-none tracking-display ${
               isLight ? "text-black" : "text-white"
             }`}>
               ARCHITECTING <br /> DIGITAL ELEGANCE.
@@ -110,10 +110,15 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
                 <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
               </a>
             </div>
-          </div>
+          </motion.div>
 
           {/* Portrait columns */}
-          <div className="md:col-span-5 relative mt-12 md:mt-0">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
+            className="md:col-span-5 relative mt-12 md:mt-0"
+          >
             <div className={`aspect-[4/5] overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 border shadow-2xl ${
               isLight ? "bg-zinc-100 border-black/10" : "bg-[#1b1b1b] border-white/10"
             }`}>
@@ -128,7 +133,7 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
             <div className={`absolute -bottom-6 -right-6 w-24 h-24 border-r border-b hidden md:block pointer-events-none ${
               isLight ? "border-black/20" : "border-white/20"
             }`} />
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -139,19 +144,21 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
         <div className="max-w-7xl mx-auto px-6 md:px-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center md:text-left">
             {activeStats.map((stat, idx) => (
-              <motion.div 
+              <motion.div
                 key={stat.label}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.6, delay: idx * 0.08, ease: EASE }}
               >
                 <span className={`text-4xl md:text-6xl font-extrabold block mb-2 select-none font-mono ${
                   isLight ? "text-black" : "text-white"
                 }`}>
                   {stat.value}
                 </span>
-                <span className="text-xs font-mono tracking-widest text-gray-500 font-bold uppercase">
+                <span className={`text-xs font-mono tracking-widest font-bold uppercase ${
+                  isLight ? "text-gray-600" : "text-gray-400"
+                }`}>
                   {stat.label}
                 </span>
               </motion.div>
@@ -167,23 +174,38 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
         <div className="max-w-7xl mx-auto px-6 md:px-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             {/* Left columns */}
-            <div className="lg:col-span-4">
-              <span className="font-mono text-xs text-gray-500 block mb-4 tracking-widest uppercase font-bold">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="lg:col-span-4"
+            >
+              <span className={`font-mono text-xs block mb-4 tracking-widest uppercase font-bold ${
+                isLight ? "text-gray-600" : "text-gray-400"
+              }`}>
                 Expertise
               </span>
-              <h2 className={`text-3xl md:text-5xl font-extrabold leading-tight uppercase tracking-tighter ${
+              <h2 className={`text-3xl md:text-5xl font-extrabold leading-tight uppercase tracking-display ${
                 isLight ? "text-black" : "text-white"
               }`}>
                 THE SKILLSET <br /> BEHIND THE WORK.
               </h2>
-            </div>
+            </motion.div>
 
             {/* Right expertise bars */}
             <div className="lg:col-span-7 lg:col-start-6 space-y-8">
               {activeSkills.map((skill, idx) => {
                 const percentage = skill.percentage || 80;
                 return (
-                  <div key={skill.name} className="skill-wrapper">
+                  <motion.div
+                    key={skill.name}
+                    initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ duration: 0.6, delay: idx * 0.07, ease: EASE }}
+                    className="skill-wrapper"
+                  >
                     <div className="flex justify-between items-end mb-3">
                       <span className={`text-lg font-bold uppercase tracking-tight font-mono ${
                         isLight ? "text-black" : "text-white"
@@ -200,14 +222,15 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
                     <div className={`h-[2px] w-full overflow-hidden relative ${
                       isLight ? "bg-black/10" : "bg-white/10"
                     }`}>
-                      <motion.div 
+                      <motion.div
                         initial={{ width: "0%" }}
-                        animate={{ width: animateBars ? `${percentage}%` : "0%" }}
-                        transition={{ duration: 1.5, delay: idx * 0.1, ease: "easeOut" }}
+                        whileInView={{ width: `${percentage}%` }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 1.2, delay: 0.15 + idx * 0.09, ease: EASE }}
                         className={`h-full ${isLight ? "bg-black" : "bg-white"}`}
                       />
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -220,31 +243,37 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
         isLight ? "bg-zinc-200 border-y border-black/5" : "bg-[#262626] border-y border-white/5"
       }`}>
         <div className="max-w-7xl mx-auto px-6 md:px-16">
-          <span className="font-mono text-xs text-gray-500 block mb-12 text-center tracking-widest uppercase">
+          <span className={`font-mono text-xs block mb-12 text-center tracking-widest uppercase ${
+            isLight ? "text-gray-600" : "text-gray-400"
+          }`}>
             SOFTWARE ECOSYSTEM
           </span>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {softwareEcosystem.map((item) => {
+            {softwareEcosystem.map((item, idx) => {
               const IconComp = iconMap[item.iconName] || Grid;
               return (
-                <div 
+                <motion.div
                   key={item.name}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-80px" }}
+                  transition={{ duration: 0.5, delay: idx * 0.06, ease: EASE }}
                   className={`group border p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-default shadow-md ${
-                    isLight 
-                      ? "bg-white border-black/10 hover:bg-zinc-50" 
+                    isLight
+                      ? "bg-white border-black/10 hover:bg-zinc-50"
                       : "bg-[#0e0e0e] border-white/5 hover:bg-[#131313]"
                   }`}
                 >
                   <IconComp className={`w-10 h-10 mb-4 text-gray-500 transition-all duration-300 ${
                     isLight ? "group-hover:text-black group-hover:scale-110" : "group-hover:text-white group-hover:scale-110"
                   }`} strokeWidth={1.2} />
-                  <span className={`font-mono text-xs tracking-widest text-gray-500 transition-colors uppercase font-bold ${
-                    isLight ? "group-hover:text-black" : "group-hover:text-white"
+                  <span className={`font-mono text-xs tracking-widest transition-colors uppercase font-bold ${
+                    isLight ? "text-gray-600 group-hover:text-black" : "text-gray-400 group-hover:text-white"
                   }`}>
                     {item.name}
                   </span>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -256,17 +285,23 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
         isLight ? "bg-zinc-200" : "bg-[#0e0e0e]"
       }`}>
         <div className="max-w-7xl mx-auto px-6 md:px-16">
-          <div className="bg-white p-12 md:p-24 text-black text-center shadow-xl">
-            <h2 className="text-3xl md:text-6xl font-extrabold mb-10 leading-none uppercase tracking-tighter">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: EASE }}
+            className="bg-white p-12 md:p-24 text-black text-center shadow-xl"
+          >
+            <h2 className="text-3xl md:text-6xl font-extrabold mb-10 leading-none uppercase tracking-display">
               LET'S CO-CREATE <br /> THE FUTURE.
             </h2>
-            <button 
+            <button
               onClick={onStartProject}
               className="inline-block bg-black text-white px-12 py-5 font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all cursor-pointer shadow-lg active:scale-95"
             >
               START A PROJECT
             </button>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>

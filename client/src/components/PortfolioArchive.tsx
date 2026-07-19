@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
 interface PortfolioArchiveProps {
   onSelectProject: (project: Project) => void;
 }
@@ -42,20 +44,20 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
         }`}>
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
           <div className="max-w-2xl px-6 relative z-10">
-            <motion.h1 
-              initial={{ opacity: 0, y: -20 }}
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className={`text-5xl md:text-8xl font-extrabold mb-6 leading-tight tracking-tighter select-none ${
+              transition={{ duration: 0.7, ease: EASE }}
+              className={`text-5xl md:text-8xl font-extrabold mb-6 leading-tight tracking-display select-none ${
                 isLight ? "text-black" : "text-white"
               }`}
             >
               PORTFOLIO <br /> ARCHIVE
             </motion.h1>
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
               className={`text-base md:text-lg max-w-lg mx-auto leading-relaxed font-sans ${
                 isLight ? "text-gray-600" : "text-gray-400"
               }`}
@@ -78,7 +80,7 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                 className={`font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 py-2 border-b-2 cursor-pointer whitespace-nowrap ${
                   selectedFilter === filter.id
                     ? (isLight ? "border-black text-black" : "border-white text-white")
-                    : (isLight ? "border-transparent text-gray-500 hover:text-black" : "border-transparent text-gray-400 hover:text-white")
+                    : (isLight ? "border-transparent text-gray-600 hover:text-black" : "border-transparent text-gray-400 hover:text-white")
                 }`}
               >
                 {filter.label}
@@ -99,11 +101,20 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                   <motion.div
                     key={project.id}
                     layout
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.5, delay: index * 0.06, ease: EASE }}
                     onClick={() => onSelectProject(project)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectProject(project);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View case study: ${project.title}`}
                     className="group cursor-pointer flex flex-col"
                   >
                     {/* Image Wrap */}
@@ -112,7 +123,7 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                     }`}>
                       <img
                         alt={project.title}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ease-out"
                         referrerPolicy="no-referrer"
                         src={projectImg}
                       />
@@ -124,14 +135,14 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                     </div>
 
                     {/* Info block */}
-                    <div className="flex justify-between items-start flex-col items-center text-center">
+                    <div className="flex flex-col items-center text-center">
                       <h3 className={`font-extrabold text-2xl tracking-tight mb-1 transition-colors uppercase ${
                         isLight ? "text-black group-hover:text-gray-600" : "text-white group-hover:text-gray-300"
                       }`}>
                         {project.title}
                       </h3>
                       <p className={`text-xs font-mono tracking-[0.2em] uppercase mt-1 ${
-                        isLight ? "text-gray-500" : "text-gray-400"
+                        isLight ? "text-gray-600" : "text-gray-400"
                       }`}>
                         {project.client} — {projectYear}
                       </p>
@@ -142,7 +153,7 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                       {tagsList.map((tag) => (
                         <span
                           key={tag}
-                          className={`px-3 py-1 border rounded-full text-xs font-mono tracking-widest transition-colors duration-300 ${
+                          className={`px-3 py-1 border text-xs font-mono tracking-widest transition-colors duration-300 ${
                             isLight ? "border-black/10 text-gray-600" : "border-white/10 text-gray-400"
                           }`}
                         >
@@ -179,11 +190,16 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
         isLight ? "bg-zinc-200 border-black/10" : "bg-[#0e0e0e] border-white/10"
       }`}>
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className={`text-4xl md:text-7xl font-extrabold tracking-tighter mb-8 select-none ${
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.7, ease: EASE }}
+            className={`text-4xl md:text-7xl font-extrabold tracking-display mb-8 select-none ${
             isLight ? "text-black" : "text-white"
           }`}>
             LET'S START SOMETHING.
-          </h2>
+          </motion.h2>
           <div className="flex flex-col md:flex-row justify-center gap-6">
             {projects && projects.length > 0 && (
               <button 
