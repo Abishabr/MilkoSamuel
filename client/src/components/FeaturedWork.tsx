@@ -3,7 +3,7 @@ import { Project } from "../types";
 import { motion } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
-import { resolveProjectCover } from "../lib/youtube";
+import ProjectCardMedia from "./ProjectCardMedia";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -15,16 +15,18 @@ interface FeaturedWorkProps {
 export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWorkProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const { projects } = useData();
-  
+  const { projects, categories } = useData();
+
   // Sort and select featured projects
   const featured = React.useMemo(() => {
     if (!projects || projects.length === 0) return [];
-    
+
+    // Public site shows published work only
+    const live = projects.filter(p => p.published !== false);
     // Filter to those explicitly flagged as featured, otherwise take any
-    const featuredOnly = projects.filter(p => !!p.is_featured);
-    const sourceList = featuredOnly.length > 0 ? featuredOnly : projects;
-    
+    const featuredOnly = live.filter(p => !!p.is_featured);
+    const sourceList = featuredOnly.length > 0 ? featuredOnly : live;
+
     return [...sourceList]
       .sort((a, b) => (a.featured_order || 999) - (b.featured_order || 999))
       .slice(0, 4);
@@ -60,11 +62,10 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
           </button>
         </div>
 
-        {/* Grid of Projects */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Grid of Projects — cards adapt to each video's native aspect ratio */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {featured.map((project, idx) => {
-            const projectImg = resolveProjectCover(project);
-            const projectYear = project.project_date;
+            const categoryName = categories.find((c) => c.id === project.category_id)?.name;
             return (
               <motion.div
                 key={project.id}
@@ -81,57 +82,24 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
                 }}
                 role="button"
                 tabIndex={0}
-                aria-label={`View case study: ${project.title}`}
+                aria-label={`View project: ${project.title}`}
                 className="group cursor-pointer"
               >
-                {/* Image Container */}
-                <div className={`aspect-[3/4] mb-6 overflow-hidden relative border transition-colors duration-300 ${
-                  isLight ? "bg-white border-black/10" : "bg-[#131313] border-white/10"
-                }`}>
-                  <img
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                    referrerPolicy="no-referrer"
-                    src={projectImg ?? undefined}
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className={`text-xs font-bold tracking-widest uppercase border px-4 py-2 bg-black/80 ${
-                      isLight ? "border-white text-white" : "border-white text-white"
-                    }`}>
-                      View Case Study
-                    </span>
-                  </div>
-                </div>
+                <ProjectCardMedia project={project} isLight={isLight} />
 
                 {/* Text Meta */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className={`font-bold text-lg uppercase tracking-tight transition-colors ${
-                      isLight ? "text-black group-hover:text-gray-600" : "text-white group-hover:text-gray-300"
-                    }`}>
-                      {project.title}
-                    </h3>
-                    <p className={`text-xs uppercase tracking-widest font-mono mt-1 ${
-                      isLight ? "text-gray-600" : "text-gray-400"
-                    }`}>
-                      {project.client}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-bold font-mono px-2 py-1 transition-colors duration-300 ${
-                    isLight ? "bg-black/5 text-gray-700" : "bg-white/5 text-gray-400"
+                <div className="mt-5">
+                  <h3 className={`font-bold text-lg uppercase tracking-tight transition-colors ${
+                    isLight ? "text-black group-hover:text-gray-600" : "text-white group-hover:text-gray-300"
                   }`}>
-                    {projectYear}
-                  </span>
+                    {project.title}
+                  </h3>
+                  <p className={`text-xs uppercase tracking-widest font-mono mt-1 ${
+                    isLight ? "text-gray-600" : "text-gray-400"
+                  }`}>
+                    {categoryName}
+                  </p>
                 </div>
-
-                {/* View Link */}
-                <span aria-hidden="true" className={`mt-4 block text-xs font-bold uppercase tracking-widest transition-all ${
-                  isLight
-                    ? "text-gray-600 group-hover:text-black group-hover:underline underline-offset-4"
-                    : "text-gray-400 group-hover:text-white group-hover:underline underline-offset-4"
-                }`}>
-                  View Project
-                </span>
               </motion.div>
             );
           })}

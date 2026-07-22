@@ -4,9 +4,17 @@ declare global {
   }
 }
 
+/** Extra metadata returned alongside a successful upload. */
+export interface UploadResult {
+  url: string;
+  width?: number;
+  height?: number;
+  resourceType?: string;
+}
+
 export function openCloudinaryUpload(
-  options: { resourceType: 'image' | 'raw'; acceptedFormats?: string[] },
-  onSuccess: (secureUrl: string) => void,
+  options: { resourceType: 'image' | 'video' | 'raw' | 'auto'; acceptedFormats?: string[] },
+  onSuccess: (secureUrl: string, meta?: UploadResult) => void,
   onError: (message: string) => void
 ) {
   const widget = window.cloudinary.createUploadWidget(
@@ -24,7 +32,13 @@ export function openCloudinaryUpload(
         return;
       }
       if (result?.event === 'success') {
-        onSuccess(result.info.secure_url);
+        const info = result.info ?? {};
+        onSuccess(info.secure_url, {
+          url: info.secure_url,
+          width: info.width,
+          height: info.height,
+          resourceType: info.resource_type,
+        });
         widget.close();
       }
     }

@@ -1,9 +1,20 @@
 import React, { useState } from "react";
 import { useData } from "../../context/DataContext";
 import { createProject, updateProject, deleteProject } from "../../lib/api";
-import { Plus, Trash2, Edit2, CircleAlert } from "lucide-react";
+import { Plus, Trash2, Edit2, CircleAlert, Loader2, ImageIcon, Film } from "lucide-react";
 import { openCloudinaryUpload, AdminTabProps } from "./cloudinaryUpload";
 import { resolveProjectCover } from "../../lib/youtube";
+import { slugify } from "../../lib/slug";
+import {
+  VideoOrientation,
+  DEFAULT_ORIENTATION,
+  aspectRatioClass,
+  orientationFromDimensions,
+  detectVideoOrientation,
+  orientationFromYouTubeUrl,
+  isPlayableVideoFile,
+  projectOrientation,
+} from "../../lib/videoOrientation";
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -13,26 +24,37 @@ import { Badge } from "@/src/components/ui/badge";
 
 const labelCls = "text-[10px] font-bold uppercase tracking-wider font-mono text-muted-foreground";
 
-const emptyForm = {
+const orientationLabel: Record<VideoOrientation, string> = {
+  landscape: "Landscape · 16:9",
+  portrait: "Portrait · 9:16",
+  square: "Square · 1:1",
+};
+
+interface ProjectForm {
+  id: string;
+  title: string;
+  category_id: string;
+  cover_image_url: string;
+  video_url: string;
+  video_orientation: VideoOrientation;
+  description: string;
+  is_featured: boolean;
+  published: boolean;
+  // preserved on edit so legacy case-study fields survive round-trips
+  legacy: Record<string, unknown>;
+}
+
+const emptyForm: ProjectForm = {
   id: "",
   title: "",
-  slug: "",
-  client: "",
-  project_date: "",
-  description: "",
-  cover_image_url: "",
-  banner_image_url: "",
-  video_url: "",
-  creative_process: "",
-  challenges: "",
-  final_result: "",
-  is_featured: false,
-  featured_order: 1,
   category_id: "",
-  technologies: "",
-  testimonial_quote: "",
-  testimonial_author: "",
-  testimonial_role: ""
+  cover_image_url: "",
+  video_url: "",
+  video_orientation: DEFAULT_ORIENTATION,
+  description: "",
+  is_featured: false,
+  published: true,
+  legacy: {},
 };
 
 export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps) {
@@ -42,15 +64,15 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
   const [isAddingProject, setIsAddingProject] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [projectForm, setProjectForm] = useState(emptyForm);
+  const [detectingOrientation, setDetectingOrientation] = useState(false);
+  const [projectForm, setProjectForm] = useState<ProjectForm>(emptyForm);
 
   const startAddProject = () => {
     setIsAddingProject(true);
     setEditingProject(null);
+    setUploadError(null);
     setProjectForm({
       ...emptyForm,
-      project_date: new Date().getFullYear().toString(),
-      featured_order: projects.length + 1,
       category_id: categories[0]?.id || "",
     });
   };
@@ -58,26 +80,30 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
   const startEditProject = (proj: any) => {
     setEditingProject(proj);
     setIsAddingProject(false);
+    setUploadError(null);
     setProjectForm({
       id: proj.id,
       title: proj.title || "",
-      slug: proj.slug || "",
-      client: proj.client || "",
-      project_date: proj.project_date || "",
-      description: proj.description || "",
-      cover_image_url: proj.cover_image_url || "",
-      banner_image_url: proj.banner_image_url || "",
-      video_url: proj.video_url || "",
-      creative_process: proj.creative_process || "",
-      challenges: proj.challenges || "",
-      final_result: proj.final_result || "",
-      is_featured: !!proj.is_featured,
-      featured_order: proj.featured_order || 1,
       category_id: proj.category_id || "",
-      technologies: Array.isArray(proj.technologies) ? proj.technologies.join(", ") : "",
-      testimonial_quote: proj.testimonial_quote || "",
-      testimonial_author: proj.testimonial_author || "",
-      testimonial_role: proj.testimonial_role || ""
+      cover_image_url: proj.cover_image_url || "",
+      video_url: proj.video_url || "",
+      video_orientation: projectOrientation(proj),
+      description: proj.description || "",
+      is_featured: !!proj.is_featured,
+      published: proj.published !== false,
+      legacy: {
+        client: proj.client ?? null,
+        project_date: proj.project_date ?? null,
+        technologies: Array.isArray(proj.technologies) ? proj.technologies : [],
+        banner_image_url: proj.banner_image_url ?? null,
+        creative_process: proj.creative_process ?? null,
+        challenges: proj.challenges ?? null,
+        final_result: proj.final_result ?? null,
+        featured_order: proj.featured_order ?? null,
+        testimonial_quote: proj.testimonial_quote ?? null,
+        testimonial_author: proj.testimonial_author ?? null,
+        testimonial_role: proj.testimonial_role ?? null,
+      },
     });
   };
 
@@ -86,42 +112,71 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
     setEditingProject(null);
   };
 
-  const handleSaveProject = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Apply an uploaded video: record the URL and auto-detect its orientation
+  // from the returned dimensions (falling back to a metadata probe).
+  const applyVideoUpload = async (url: string, width?: number, height?: number) => {
+    setProjectForm((prev) => ({ ...prev, video_url: url }));
+    setDetectingOrientation(true);
+    try {
+      let orientation: VideoOrientation;
+      if (width && height) {
+        orientation = orientationFromDimensions(width, height);
+      } else {
+        orientation = await detectVideoOrientation(url);
+      }
+      setProjectForm((prev) => ({ ...prev, video_orientation: orientation }));
+    } finally {
+      setDetectingOrientation(false);
+    }
+  };
+
+  // A pasted YouTube/URL string: detect orientation once the field settles.
+  const applyVideoUrl = async (url: string) => {
+    setProjectForm((prev) => ({ ...prev, video_url: url }));
+    if (!url.trim()) return;
+    const ytGuess = orientationFromYouTubeUrl(url);
+    if (ytGuess) {
+      setProjectForm((prev) => ({ ...prev, video_orientation: ytGuess }));
+      return;
+    }
+    if (isPlayableVideoFile(url)) {
+      setDetectingOrientation(true);
+      try {
+        const orientation = await detectVideoOrientation(url);
+        setProjectForm((prev) => ({ ...prev, video_orientation: orientation }));
+      } finally {
+        setDetectingOrientation(false);
+      }
+    }
+  };
+
+  const persist = async (publishedOverride: boolean) => {
     setSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
+        ...projectForm.legacy,
         title: projectForm.title,
-        slug: projectForm.slug,
-        client: projectForm.client,
-        project_date: projectForm.project_date,
+        // slug omitted — the DB trigger generates it from the title
         description: projectForm.description,
-        cover_image_url: projectForm.cover_image_url,
-        banner_image_url: projectForm.banner_image_url,
-        video_url: projectForm.video_url,
-        creative_process: projectForm.creative_process,
-        challenges: projectForm.challenges,
-        final_result: projectForm.final_result,
+        cover_image_url: projectForm.cover_image_url || null,
+        video_url: projectForm.video_url || null,
+        video_orientation: projectForm.video_orientation,
         is_featured: projectForm.is_featured,
-        featured_order: projectForm.featured_order,
+        published: publishedOverride,
         category_id: projectForm.category_id || null,
-        technologies: projectForm.technologies.split(",").map((t: string) => t.trim()).filter(Boolean),
-        testimonial_quote: projectForm.testimonial_quote || null,
-        testimonial_author: projectForm.testimonial_author || null,
-        testimonial_role: projectForm.testimonial_role || null,
       };
 
       if (isAddingProject) {
         await createProject(payload as any);
-        showToast("Project created successfully");
+        showToast(publishedOverride ? "Project published" : "Draft saved");
       } else {
         await updateProject(projectForm.id, payload);
-        showToast("Project updated successfully");
+        showToast(publishedOverride ? "Project published" : "Draft saved");
       }
       closeForm();
       await refetch();
     } catch (e: any) {
-      showWriteError("Failed to " + (isAddingProject ? "create" : "update") + " project: " + e.message);
+      showWriteError("Failed to save project: " + e.message);
     } finally {
       setSubmitting(false);
     }
@@ -138,19 +193,27 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
     }
   };
 
+  const slugPreview = slugify(projectForm.title) || "project";
+  const orientation = projectForm.video_orientation;
+  const previewCover = resolveProjectCover({
+    cover_image_url: projectForm.cover_image_url || null,
+    video_url: projectForm.video_url || null,
+  });
+  const showVideoPreview = isPlayableVideoFile(projectForm.video_url);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-extrabold tracking-tighter uppercase font-sans">Projects Database</h2>
-          <p className="text-xs text-muted-foreground font-mono mt-1 uppercase tracking-widest">Add or modify case studies</p>
+          <p className="text-xs text-muted-foreground font-mono mt-1 uppercase tracking-widest">Add or modify portfolio work</p>
         </div>
         {!isAddingProject && !editingProject && (
           <Button
             onClick={startAddProject}
             className="text-[10px] font-bold uppercase tracking-widest"
           >
-            <Plus className="w-3.5 h-3.5" /> Create Project
+            <Plus className="w-3.5 h-3.5" /> Add Project
           </Button>
         )}
       </div>
@@ -158,109 +221,84 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
       {/* Listing Projects */}
       {!isAddingProject && !editingProject && (
         <div className="border divide-y">
-          {projects.map((proj) => (
-            <div key={proj.id} className="flex items-center justify-between p-4 group hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-4">
-                <img
-                  src={resolveProjectCover(proj) ?? ""}
-                  alt={proj.title}
-                  className="w-16 h-12 object-cover border"
-                  referrerPolicy="no-referrer"
-                />
-                <div>
-                  <h3 className="font-bold text-sm tracking-tight">{proj.title}</h3>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    {proj.client} — {proj.project_date}
-                    {proj.is_featured && <Badge variant="secondary" className="ml-2.5 text-[9px] font-bold font-sans">FEATURED</Badge>}
-                  </p>
+          {projects.map((proj) => {
+            const o = projectOrientation(proj);
+            return (
+              <div key={proj.id} className="flex items-center justify-between p-4 group hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={resolveProjectCover(proj) ?? ""}
+                    alt={proj.title}
+                    className="w-16 h-12 object-cover border"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <h3 className="font-bold text-sm tracking-tight">{proj.title}</h3>
+                    <p className="text-xs text-muted-foreground font-mono flex items-center gap-2 flex-wrap">
+                      <span>{categories.find((c) => c.id === proj.category_id)?.name || "Uncategorized"}</span>
+                      <Badge variant="outline" className="text-[9px] font-bold font-mono uppercase">{o}</Badge>
+                      {proj.is_featured && <Badge variant="secondary" className="text-[9px] font-bold font-sans">FEATURED</Badge>}
+                      {proj.published === false && <Badge variant="outline" className="text-[9px] font-bold font-sans text-amber-600 border-amber-600/40">DRAFT</Badge>}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                  <Button variant="outline" size="icon-sm" onClick={() => startEditProject(proj)} title="Edit Project">
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => handleDeleteProject(proj.id)}
+                    title="Delete Project"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  onClick={() => startEditProject(proj)}
-                  title="Edit Project"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  className="text-muted-foreground hover:text-destructive"
-                  onClick={() => handleDeleteProject(proj.id)}
-                  title="Delete Project"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Create/Edit Form */}
       {(isAddingProject || editingProject) && (
-        <form onSubmit={handleSaveProject} className="space-y-6 pt-4 border-t border-dashed">
+        <form onSubmit={(e) => { e.preventDefault(); persist(true); }} className="space-y-6 pt-4 border-t border-dashed">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-extrabold uppercase tracking-wider text-primary">
-              {isAddingProject ? "CREATE NEW CASE STUDY" : `EDITING: ${projectForm.title}`}
+              {isAddingProject ? "ADD PROJECT" : `EDITING: ${projectForm.title}`}
             </h3>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={closeForm}
-              className="text-xs text-muted-foreground font-mono uppercase"
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={closeForm} className="text-xs text-muted-foreground font-mono uppercase">
               Cancel
             </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 1. Project Title */}
             <div className="space-y-2">
               <Label className={labelCls}>Project Title</Label>
               <Input
                 type="text" required
                 value={projectForm.title}
-                onChange={e => setProjectForm({ ...projectForm, title: e.target.value })}
+                onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                placeholder="e.g. Nexus Finance"
               />
+              <p className="text-[10px] font-mono text-muted-foreground">
+                Slug: <span className="text-foreground">/{slugPreview}</span> <span className="opacity-60">(auto-generated)</span>
+              </p>
             </div>
-            <div className="space-y-2">
-              <Label className={labelCls}>Project Slug (URL ID)</Label>
-              <Input
-                type="text" required
-                value={projectForm.slug}
-                onChange={e => setProjectForm({ ...projectForm, slug: e.target.value })}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 2. Category */}
             <div className="space-y-2">
-              <Label className={labelCls}>Client / Company Name</Label>
-              <Input
-                type="text" required
-                value={projectForm.client}
-                onChange={e => setProjectForm({ ...projectForm, client: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={labelCls}>Project Date / Year</Label>
-              <Input
-                type="text" required
-                value={projectForm.project_date}
-                onChange={e => setProjectForm({ ...projectForm, project_date: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={labelCls}>Category Folder</Label>
+              <Label className={labelCls}>Category</Label>
               <select
                 value={projectForm.category_id}
-                onChange={e => setProjectForm({ ...projectForm, category_id: e.target.value })}
+                onChange={(e) => setProjectForm({ ...projectForm, category_id: e.target.value })}
                 className="w-full h-9 px-3 border bg-transparent text-sm focus:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
+                <option value="">Uncategorized</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
@@ -269,14 +307,16 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 3. Thumbnail Upload */}
             <div className="space-y-2">
-              <Label className={labelCls}>Cover Image URL (Optional — falls back to the video thumbnail)</Label>
+              <Label className={labelCls}>Thumbnail</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
                   className="flex-1"
+                  placeholder="Upload an image or paste a URL"
                   value={projectForm.cover_image_url}
-                  onChange={e => setProjectForm({ ...projectForm, cover_image_url: e.target.value })}
+                  onChange={(e) => setProjectForm({ ...projectForm, cover_image_url: e.target.value })}
                 />
                 <Button
                   type="button"
@@ -285,24 +325,28 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
                   onClick={() => {
                     setUploadError(null);
                     openCloudinaryUpload(
-                      { resourceType: 'image', acceptedFormats: ['jpg', 'png', 'gif', 'webp', 'svg'] },
-                      (url) => { setUploadError(null); setProjectForm((prev: any) => ({ ...prev, cover_image_url: url })); },
-                      (err) => { setUploadError('Cover image upload failed: ' + err); }
+                      { resourceType: "image", acceptedFormats: ["jpg", "png", "gif", "webp", "svg"] },
+                      (url) => { setUploadError(null); setProjectForm((prev) => ({ ...prev, cover_image_url: url })); },
+                      (err) => setUploadError("Thumbnail upload failed: " + err)
                     );
                   }}
                 >
-                  Upload
+                  <ImageIcon className="w-3.5 h-3.5" /> Upload
                 </Button>
               </div>
+              <p className="text-[10px] font-mono text-muted-foreground">Optional — falls back to the video thumbnail.</p>
             </div>
+
+            {/* 4. Video Upload */}
             <div className="space-y-2">
-              <Label className={labelCls}>Banner Image URL (Optional)</Label>
+              <Label className={labelCls}>Video</Label>
               <div className="flex gap-2">
                 <Input
                   type="text"
                   className="flex-1"
-                  value={projectForm.banner_image_url}
-                  onChange={e => setProjectForm({ ...projectForm, banner_image_url: e.target.value })}
+                  placeholder="Upload a video or paste a YouTube URL"
+                  value={projectForm.video_url}
+                  onChange={(e) => applyVideoUrl(e.target.value)}
                 />
                 <Button
                   type="button"
@@ -311,89 +355,114 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
                   onClick={() => {
                     setUploadError(null);
                     openCloudinaryUpload(
-                      { resourceType: 'image', acceptedFormats: ['jpg', 'png', 'gif', 'webp', 'svg'] },
-                      (url) => { setUploadError(null); setProjectForm((prev: any) => ({ ...prev, banner_image_url: url })); },
-                      (err) => { setUploadError('Banner image upload failed: ' + err); }
+                      { resourceType: "video", acceptedFormats: ["mp4", "webm", "mov", "m4v", "ogv"] },
+                      (url, meta) => { setUploadError(null); applyVideoUpload(url, meta?.width, meta?.height); },
+                      (err) => setUploadError("Video upload failed: " + err)
                     );
                   }}
                 >
-                  Upload
+                  <Film className="w-3.5 h-3.5" /> Upload
                 </Button>
               </div>
+              <p className="text-[10px] font-mono text-muted-foreground flex items-center gap-1.5">
+                {detectingOrientation ? (
+                  <><Loader2 className="w-3 h-3 animate-spin" /> Detecting orientation…</>
+                ) : projectForm.video_url ? (
+                  <>Orientation: <span className="text-foreground font-bold">{orientationLabel[orientation]}</span> <span className="opacity-60">(auto-detected)</span></>
+                ) : (
+                  <>Orientation is detected automatically after upload.</>
+                )}
+              </p>
             </div>
           </div>
+
+          {/* Live aspect-ratio preview */}
+          {(previewCover || showVideoPreview) && (
+            <div className="space-y-2">
+              <Label className={labelCls}>Preview ({orientation})</Label>
+              <div className="flex justify-center border border-dashed p-6 bg-muted/30">
+                <div
+                  className={`relative overflow-hidden bg-black rounded-lg ${aspectRatioClass(orientation)} ${
+                    orientation === "portrait" ? "h-72" : orientation === "square" ? "h-64" : "w-full max-w-xl"
+                  }`}
+                >
+                  {showVideoPreview ? (
+                    <video
+                      className="absolute inset-0 w-full h-full object-cover"
+                      src={projectForm.video_url}
+                      muted loop playsInline autoPlay
+                      poster={previewCover ?? undefined}
+                    />
+                  ) : (
+                    <img
+                      src={previewCover ?? ""}
+                      alt="preview"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {uploadError && (
-            <div className="flex items-center gap-2 text-destructive text-xs font-mono mt-1">
+            <div className="flex items-center gap-2 text-destructive text-xs font-mono">
               <CircleAlert className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{uploadError}</span>
             </div>
           )}
 
+          {/* 5. Description */}
           <div className="space-y-2">
-            <Label className={labelCls}>Video Embed URL (Optional — plain YouTube URL, not Cloudinary)</Label>
-            <Input
-              type="text"
-              value={projectForm.video_url}
-              onChange={e => setProjectForm({ ...projectForm, video_url: e.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className={labelCls}>Technologies (comma-separated, e.g. FIGMA, PREMIERE, VIDEO)</Label>
-            <Input
-              type="text"
-              value={projectForm.technologies}
-              onChange={e => setProjectForm({ ...projectForm, technologies: e.target.value })}
-              placeholder="BRANDING, PACKAGING, ADOBE CC"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className={labelCls}>Intro Description Summary</Label>
+            <Label className={labelCls}>Description</Label>
             <Textarea
-              rows={2} required
+              rows={3} required
               value={projectForm.description}
-              onChange={e => setProjectForm({ ...projectForm, description: e.target.value })}
+              onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+              placeholder="A short summary of the project."
             />
           </div>
 
-          <div className="flex items-center gap-6 p-4 border">
-            <div className="flex items-center gap-2">
+          {/* 6 & 7. Featured + Published toggles */}
+          <div className="flex flex-wrap items-center gap-8 p-4 border">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
-                id="is_featured"
                 checked={projectForm.is_featured}
-                onChange={e => setProjectForm({ ...projectForm, is_featured: e.target.checked })}
+                onChange={(e) => setProjectForm({ ...projectForm, is_featured: e.target.checked })}
                 className="w-4 h-4 cursor-pointer accent-primary"
               />
-              <Label htmlFor="is_featured" className="text-xs uppercase font-mono cursor-pointer font-bold select-none">Feature on Homepage</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Label className="text-[10px] uppercase font-mono font-bold">Display Order:</Label>
-              <Input
-                type="number"
-                value={projectForm.featured_order}
-                onChange={e => setProjectForm({ ...projectForm, featured_order: parseInt(e.target.value) || 1 })}
-                className="w-16 h-8 px-1 text-center font-mono"
+              <span className="text-xs uppercase font-mono font-bold">Featured</span>
+            </label>
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={projectForm.published}
+                onChange={(e) => setProjectForm({ ...projectForm, published: e.target.checked })}
+                className="w-4 h-4 cursor-pointer accent-primary"
               />
-            </div>
+              <span className="text-xs uppercase font-mono font-bold">Published</span>
+            </label>
           </div>
 
-          <div className="flex gap-4">
+          {/* Save Draft + Publish */}
+          <div className="flex flex-wrap gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={submitting}
+              onClick={() => persist(false)}
+              className="px-6 py-5 text-xs font-bold uppercase tracking-widest"
+            >
+              {submitting ? "Saving…" : "Save Draft"}
+            </Button>
             <Button
               type="submit"
               disabled={submitting}
               className="px-6 py-5 text-xs font-bold uppercase tracking-widest"
             >
-              {submitting ? "SAVING..." : "SAVE CASE STUDY"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={closeForm}
-              className="px-6 py-5 text-xs font-bold uppercase tracking-widest"
-            >
-              CANCEL
+              {submitting ? "Saving…" : "Publish Project"}
             </Button>
           </div>
         </form>

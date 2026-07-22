@@ -157,10 +157,11 @@ function MainApp() {
       </main>
 
       {/* Case Study Detail Overlay Modal */}
-      <ProjectModal 
-        project={selectedProject} 
-        onClose={() => setSelectedProject(null)} 
+      <ProjectModal
+        project={selectedProject}
+        onClose={() => setSelectedProject(null)}
         onStartTalk={handleStartTalk}
+        onSelectProject={setSelectedProject}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import { Project } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
-import { resolveProjectCover } from "../lib/youtube";
+import ProjectCardMedia from "./ProjectCardMedia";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -29,11 +29,13 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
     return list;
   }, [categories]);
 
-  // Match projects by category_id (a UUID) against the selected category's id
+  // Match projects by category_id (a UUID) against the selected category's id.
+  // Public archive shows published work only.
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
-    if (selectedFilter === "ALL") return projects;
-    return projects.filter((project) => project.category_id === selectedFilter);
+    const live = projects.filter((p) => p.published !== false);
+    if (selectedFilter === "ALL") return live;
+    return live.filter((project) => project.category_id === selectedFilter);
   }, [selectedFilter, projects]);
 
   return (
@@ -89,22 +91,20 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
           </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          <AnimatePresence mode="popLayout">
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project, index) => {
-                const projectImg = resolveProjectCover(project);
-                const projectYear = project.project_date;
-                const tagsList = project.technologies || [];
+        {/* Projects Grid — masonry columns so landscape, portrait and square
+            cards flow naturally without stretching or cropping. */}
+        {filteredProjects.length > 0 ? (
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 [column-fill:_balance]">
+            <AnimatePresence>
+              {filteredProjects.map((project, index) => {
+                const categoryName = categories.find((c) => c.id === project.category_id)?.name;
                 return (
                   <motion.div
                     key={project.id}
-                    layout
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.5, delay: index * 0.06, ease: EASE }}
+                    transition={{ duration: 0.5, delay: index * 0.05, ease: EASE }}
                     onClick={() => onSelectProject(project)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
@@ -114,29 +114,14 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                     }}
                     role="button"
                     tabIndex={0}
-                    aria-label={`View case study: ${project.title}`}
-                    className="group cursor-pointer flex flex-col"
+                    aria-label={`View project: ${project.title}`}
+                    className="group cursor-pointer mb-8 break-inside-avoid"
                   >
-                    {/* Image Wrap */}
-                    <div className={`relative overflow-hidden aspect-[16/10] border mb-6 transition-colors duration-300 ${
-                      isLight ? "bg-zinc-50 border-black/5" : "bg-[#1f1f1f] border-white/5"
-                    }`}>
-                      <img
-                        alt={project.title}
-                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                        referrerPolicy="no-referrer"
-                        src={projectImg ?? undefined}
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <span className="text-xs font-mono font-bold tracking-widest border border-white px-6 py-2.5 bg-black/80 text-white">
-                          VIEW CASE STUDY
-                        </span>
-                      </div>
-                    </div>
+                    <ProjectCardMedia project={project} isLight={isLight} />
 
                     {/* Info block */}
-                    <div className="flex flex-col items-center text-center">
-                      <h3 className={`font-extrabold text-2xl tracking-tight mb-1 transition-colors uppercase ${
+                    <div className="mt-4 text-center">
+                      <h3 className={`font-extrabold text-xl tracking-tight transition-colors uppercase ${
                         isLight ? "text-black group-hover:text-gray-600" : "text-white group-hover:text-gray-300"
                       }`}>
                         {project.title}
@@ -144,45 +129,31 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                       <p className={`text-xs font-mono tracking-[0.2em] uppercase mt-1 ${
                         isLight ? "text-gray-600" : "text-gray-400"
                       }`}>
-                        {project.client} — {projectYear}
+                        {categoryName}
                       </p>
-                    </div>
-
-                    {/* Subtag pills */}
-                    <div className="mt-4 flex gap-2 justify-center flex-wrap">
-                      {tagsList.map((tag) => (
-                        <span
-                          key={tag}
-                          className={`px-3 py-1 border text-xs font-mono tracking-widest transition-colors duration-300 ${
-                            isLight ? "border-black/10 text-gray-600" : "border-white/10 text-gray-400"
-                          }`}
-                        >
-                          {tag}
-                        </span>
-                      ))}
                     </div>
                   </motion.div>
                 );
-              })
-            ) : (
-              <div className={`col-span-full py-20 text-center border transition-colors duration-300 ${
-                isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
-              }`}>
-                <p className={`font-sans mb-4 ${isLight ? "text-gray-600" : "text-gray-400"}`}>No projects match your current filters.</p>
-                <button 
-                  onClick={() => { setSelectedFilter("ALL"); }}
-                  className={`border px-6 py-2.5 text-[10px] font-mono uppercase tracking-widest transition-all ${
-                    isLight 
-                      ? "border-black/20 hover:border-black text-black" 
-                      : "border-white/20 hover:border-white text-white"
-                  }`}
-                >
-                  Reset All Filters
-                </button>
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
+              })}
+            </AnimatePresence>
+          </div>
+        ) : (
+          <div className={`py-20 text-center border transition-colors duration-300 ${
+            isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
+          }`}>
+            <p className={`font-sans mb-4 ${isLight ? "text-gray-600" : "text-gray-400"}`}>No projects match your current filters.</p>
+            <button
+              onClick={() => { setSelectedFilter("ALL"); }}
+              className={`border px-6 py-2.5 text-[10px] font-mono uppercase tracking-widest transition-all ${
+                isLight
+                  ? "border-black/20 hover:border-black text-black"
+                  : "border-white/20 hover:border-white text-white"
+              }`}
+            >
+              Reset All Filters
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Portfolio CTA Block */}

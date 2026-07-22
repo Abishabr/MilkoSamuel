@@ -19,26 +19,35 @@ export interface Category {
   slug: string;
 }
 
+export type VideoOrientation = "landscape" | "portrait" | "square";
+
 export interface Project {
   id: string;
   title: string;
   slug: string;
-  client: string | null;
-  project_date: string | null;
   description: string | null;
-  technologies: string[];
   cover_image_url: string | null;
-  banner_image_url: string | null;
   video_url: string | null;
-  creative_process: string | null;
-  challenges: string | null;
-  final_result: string | null;
+  video_orientation: VideoOrientation;
   is_featured: boolean;
-  featured_order: number | null;
+  published: boolean;
   category_id: string | null;
-  testimonial_quote: string | null;
-  testimonial_author: string | null;
-  testimonial_role: string | null;
+  created_at: string;
+  updated_at: string;
+  // ── Legacy / optional fields ──────────────────────────────────────────────
+  // Retained so existing rows and admin edits are non-destructive, but no
+  // longer part of the streamlined create form.
+  client?: string | null;
+  project_date?: string | null;
+  technologies?: string[];
+  banner_image_url?: string | null;
+  creative_process?: string | null;
+  challenges?: string | null;
+  final_result?: string | null;
+  featured_order?: number | null;
+  testimonial_quote?: string | null;
+  testimonial_author?: string | null;
+  testimonial_role?: string | null;
 }
 
 export interface ProjectImage {

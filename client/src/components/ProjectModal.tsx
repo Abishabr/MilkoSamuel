@@ -1,9 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Project } from "../types";
-import { X, User, MessageSquare, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Folder } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
-import { toYouTubeEmbedUrl, resolveProjectCover } from "../lib/youtube";
+import { useData } from "../context/DataContext";
+import { resolveProjectCover } from "../lib/youtube";
+import { projectOrientation, aspectRatioClass, isPlayableVideoFile } from "../lib/videoOrientation";
+import ProjectVideoPlayer from "./ProjectVideoPlayer";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -11,22 +14,29 @@ interface ProjectModalProps {
   project: Project | null;
   onClose: () => void;
   onStartTalk: () => void;
+  onSelectProject: (project: Project) => void;
 }
 
-export default function ProjectModal({ project, onClose, onStartTalk }: ProjectModalProps) {
+function formatPublishedDate(project: Project): string {
+  const raw = project.created_at || (project.project_date ?? "");
+  if (!raw) return "";
+  const parsed = new Date(raw);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  }
+  // Legacy rows may store just a year string.
+  return String(raw);
+}
+
+export default function ProjectModal({ project, onClose, onStartTalk, onSelectProject }: ProjectModalProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
+  const { projects, categories } = useData();
 
   // Prevent background scroll when modal is active
   useEffect(() => {
-    if (project) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = project ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [project]);
 
   // Close on Escape while the modal is open
@@ -39,15 +49,41 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [project, onClose]);
 
+  const categoryName = useMemo(() => {
+    if (!project) return "";
+    return categories.find((c) => c.id === project.category_id)?.name || "Uncategorized";
+  }, [project, categories]);
+
+  // 3–6 related projects from the same category (published only).
+  const related = useMemo(() => {
+    if (!project) return [];
+    return projects
+      .filter((p) => p.id !== project.id && p.published !== false && p.category_id === project.category_id)
+      .slice(0, 6);
+  }, [project, projects]);
+
   if (!project) return null;
+
+  const orientation = projectOrientation(project);
+  const publishedDate = formatPublishedDate(project);
+
+  const surface = isLight ? "bg-white text-black" : "bg-[#0b0b0b] text-white";
+  const subtle = isLight ? "text-gray-600" : "text-gray-400";
+  const hairline = isLight ? "border-black/10" : "border-white/10";
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 select-none" id="case-study-overlay" role="dialog" aria-modal="true" aria-label={`Case study: ${project.title}`}>
+      <div
+        className="fixed inset-0 z-50 flex items-stretch justify-center select-none"
+        id="case-study-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Project: ${project.title}`}
+      >
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.95 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: EASE }}
           onClick={onClose}
@@ -55,149 +91,147 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
           className="absolute inset-0 bg-black/90 backdrop-blur-md cursor-pointer"
         />
 
-        {/* Modal Sheet container */}
+        {/* Full-height cinematic sheet */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.98, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: 16 }}
-          transition={{ duration: 0.45, ease: EASE }}
-          className={`relative w-full max-w-5xl border h-[90vh] md:h-[85vh] flex flex-col overflow-hidden transition-colors duration-300 ${
-            isLight ? "bg-white border-black/10 text-black" : "bg-[#131313] border-white/10 text-white"
-          }`}
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          className={`relative w-full h-full overflow-y-auto scrollbar-none ${surface} transition-colors duration-300`}
         >
-          {/* Header Action bar */}
-          <div className={`flex justify-between items-center px-6 py-4 border-b backdrop-blur sticky top-0 z-10 transition-colors duration-300 ${
-            isLight ? "border-b-black/10 bg-zinc-100/80 text-black" : "border-b-white/10 bg-[#0e0e0e]/80 text-white"
+          {/* Sticky top bar with Back button */}
+          <div className={`sticky top-0 z-10 flex items-center justify-between px-6 md:px-12 py-5 border-b backdrop-blur ${hairline} ${
+            isLight ? "bg-white/80" : "bg-[#0b0b0b]/80"
           }`}>
-            <span className={`font-mono text-xs uppercase tracking-widest font-bold ${
-              isLight ? "text-gray-700" : "text-gray-400"
-            }`}>
-              Case Study Analysis
-            </span>
-            <button 
+            <button
               onClick={onClose}
-              className={`w-10 h-10 border flex items-center justify-center transition-all duration-300 cursor-pointer ${
-                isLight 
-                  ? "border-black/10 text-black hover:bg-black hover:text-white hover:border-black" 
-                  : "border-white/10 text-white hover:bg-white hover:text-black hover:border-white"
-              }`}
-              aria-label="Close modal"
+              className={`group inline-flex items-center gap-2.5 text-xs font-mono font-bold uppercase tracking-widest transition-colors cursor-pointer ${subtle} hover:${isLight ? "text-black" : "text-white"}`}
+              aria-label="Back to portfolio"
             >
-              <X className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Back
             </button>
+            <span className={`font-mono text-[10px] uppercase tracking-[0.25em] ${subtle}`}>{categoryName}</span>
           </div>
 
-          {/* Modal scroll area */}
-          <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 scrollbar-none select-text">
-            {/* Project Hero Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              <div className={`lg:col-span-7 aspect-[16/10] overflow-hidden border transition-colors duration-300 ${
-                isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
-              }`}>
-                <img
-                  alt={project.title}
-                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700 ease-out"
-                  referrerPolicy="no-referrer"
-                  src={resolveProjectCover(project) ?? ""}
-                />
-              </div>
+          <div className="max-w-6xl mx-auto px-6 md:px-12 py-12 md:py-16 space-y-14">
+            {/* Title + category */}
+            <div className="text-center space-y-4">
+              <p className={`font-mono text-[11px] uppercase tracking-[0.3em] ${subtle}`}>{categoryName}</p>
+              <h1 className="text-4xl md:text-7xl font-extrabold tracking-display uppercase leading-[0.95]">
+                {project.title}
+              </h1>
+            </div>
 
-              {/* Core Meta Details */}
-              <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
-                <div>
-                  <h2 className={`text-4xl md:text-5xl font-extrabold tracking-display uppercase select-none ${
-                    isLight ? "text-black" : "text-white"
-                  }`}>
-                    {project.title}
-                  </h2>
-                  <p className={`font-sans text-sm mt-4 leading-relaxed ${
-                    isLight ? "text-gray-600" : "text-gray-400"
-                  }`}>
-                    {project.description}
-                  </p>
+            {/* Adaptive video player — native aspect ratio */}
+            {project.video_url && (
+              <ProjectVideoPlayer
+                videoUrl={project.video_url}
+                orientation={orientation}
+                title={project.title}
+                poster={project.cover_image_url}
+              />
+            )}
+
+            {/* Fallback cover if there is no video */}
+            {!project.video_url && resolveProjectCover(project) && (
+              <div className="flex justify-center">
+                <div className={`relative overflow-hidden rounded-2xl ${aspectRatioClass(orientation)} ${
+                  orientation === "portrait" ? "h-[70vh]" : "w-full max-w-4xl"
+                } ${isLight ? "bg-zinc-100" : "bg-[#161616]"}`}>
+                  <img
+                    src={resolveProjectCover(project) ?? ""}
+                    alt={project.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
+              </div>
+            )}
 
-                {/* Client */}
-                {project.client && (
-                  <div className={`flex items-center space-x-3 border-t pt-6 transition-colors duration-300 ${
-                    isLight ? "border-black/10" : "border-white/10"
-                  }`}>
-                    <User className={`w-4 h-4 ${isLight ? "text-gray-600" : "text-gray-500"}`} />
-                    <div>
-                      <p className={`text-[9px] font-mono tracking-widest uppercase ${isLight ? "text-gray-600" : "text-gray-500"}`}>Client</p>
-                      <p className={`text-sm font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{project.client}</p>
+            {/* Meta + description */}
+            <div className="max-w-3xl mx-auto space-y-8">
+              <div className="grid grid-cols-2 gap-6">
+                <div className={`border-t pt-4 ${hairline}`}>
+                  <div className={`flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest ${subtle}`}>
+                    <Folder className="w-3.5 h-3.5" /> Category
+                  </div>
+                  <p className="mt-1.5 text-sm font-bold">{categoryName}</p>
+                </div>
+                {publishedDate && (
+                  <div className={`border-t pt-4 ${hairline}`}>
+                    <div className={`flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest ${subtle}`}>
+                      <Calendar className="w-3.5 h-3.5" /> Published
                     </div>
+                    <p className="mt-1.5 text-sm font-bold">{publishedDate}</p>
                   </div>
                 )}
               </div>
+
+              {project.description && (
+                <div className={`border-t pt-8 ${hairline}`}>
+                  <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight uppercase mb-4">{project.title}</h2>
+                  <p className={`text-base md:text-lg leading-relaxed font-sans ${subtle}`}>
+                    {project.description}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* YouTube video embed — Requirements 7.1–7.5 */}
-            {project.video_url && toYouTubeEmbedUrl(project.video_url) && (
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src={toYouTubeEmbedUrl(project.video_url)!}
-                  title={`${project.title} video`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            )}
-
-            {/* Client Testimonial Monochromatic block */}
-            {project.testimonial_quote && (
-              <div className={`border p-8 md:p-12 relative flex flex-col md:flex-row items-start md:space-x-8 transition-colors duration-300 ${
-                isLight ? "bg-zinc-50 border-black/5" : "bg-[#0e0e0e] border-white/5"
-              }`}>
-                <MessageSquare className={`w-12 h-12 shrink-0 mb-4 md:mb-0 ${isLight ? "text-gray-600" : "text-gray-400"}`} strokeWidth={1} />
-                <div className="space-y-4">
-                  <p className={`text-sm md:text-base italic font-sans leading-relaxed ${
-                    isLight ? "text-gray-700" : "text-gray-300"
-                  }`}>
-                    "{project.testimonial_quote}"
-                  </p>
-                  <div>
-                    <p className={`text-xs font-mono tracking-widest uppercase font-bold ${
-                      isLight ? "text-black font-semibold" : "text-white"
-                    }`}>
-                      — {project.testimonial_author}
-                    </p>
-                    <p className={`text-[10px] font-mono tracking-widest uppercase mt-1 ${
-                      isLight ? "text-gray-600" : "text-gray-400"
-                    }`}>
-                      {project.testimonial_role}
-                    </p>
-                  </div>
+            {/* Related Projects */}
+            {related.length > 0 && (
+              <div className={`border-t pt-12 ${hairline}`}>
+                <h2 className="text-xs font-bold uppercase tracking-[0.3em] mb-8 font-mono text-center">
+                  Related Projects
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                  {related.map((rel) => {
+                    const relCover = resolveProjectCover(rel);
+                    const relOrientation = projectOrientation(rel);
+                    return (
+                      <button
+                        key={rel.id}
+                        onClick={() => onSelectProject(rel)}
+                        className="group text-left cursor-pointer"
+                      >
+                        <div className={`relative overflow-hidden rounded-xl border ${aspectRatioClass(relOrientation)} ${
+                          isLight ? "bg-zinc-100 border-black/10" : "bg-[#161616] border-white/10"
+                        }`}>
+                          <img
+                            src={relCover ?? ""}
+                            alt={rel.title}
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <span className="text-[10px] font-mono font-bold tracking-widest uppercase text-white border border-white/70 px-3 py-1.5 rounded-full">
+                              View Project
+                            </span>
+                          </div>
+                        </div>
+                        <h3 className="mt-3 text-sm font-bold uppercase tracking-tight truncate">{rel.title}</h3>
+                        <p className={`text-[10px] font-mono uppercase tracking-widest ${subtle}`}>
+                          {categories.find((c) => c.id === rel.category_id)?.name || "Uncategorized"}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Quick action footer inside modal */}
-            <div className={`pt-12 border-t flex flex-col md:flex-row justify-between items-center gap-6 transition-colors duration-300 ${
-              isLight ? "border-black/10" : "border-white/10"
-            }`}>
-              <div>
-                <p className={`text-lg font-extrabold uppercase tracking-tight ${
-                  isLight ? "text-black" : "text-white"
-                }`}>
-                  INSPIRED BY THIS WORK?
-                </p>
-                <p className={`text-xs font-sans mt-1 ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  Let's discuss how we can adapt similar strategic geometry to your brand.
-                </p>
-              </div>
-              <button 
+            {/* CTA */}
+            <div className={`border-t pt-14 text-center ${hairline}`}>
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-display uppercase mb-8">
+                Interested in working together?
+              </h2>
+              <button
                 onClick={onStartTalk}
-                className={`inline-flex items-center gap-3 px-8 py-4 text-xs font-mono font-bold uppercase tracking-widest transition-all cursor-pointer active:scale-95 ${
-                  isLight 
-                    ? "bg-black text-white hover:bg-gray-800" 
-                    : "bg-white text-black hover:bg-gray-200"
+                className={`inline-flex items-center gap-3 px-10 py-5 text-xs font-mono font-bold uppercase tracking-widest rounded-full transition-all cursor-pointer active:scale-95 ${
+                  isLight ? "bg-black text-white hover:bg-gray-800" : "bg-white text-black hover:bg-gray-200"
                 }`}
               >
-                Let's Talk About Your Project
+                Start a Project
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
