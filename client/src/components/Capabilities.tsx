@@ -64,11 +64,11 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
 
   // Static fallback list matching prior design
   const fallbackServices = [
-    { id: "1", name: "GRAPHIC DESIGN", description: "Creating striking typography hierarchies, high-contrast print materials, elegant packaging systems, and digital posters.", icon: "PenTool", display_order: 1 },
-    { id: "2", name: "VIDEO EDITING", description: "Polishing dynamic short-form videos, commercials, visual loops, and multi-track timelines with rhythmic cuts.", icon: "Video", display_order: 2 },
-    { id: "3", name: "BRAND IDENTITY", description: "Designing iconic logos, tailored color systems, visual guidelines, and cohesive vector systems.", icon: "Fingerprint", display_order: 3 },
-    { id: "4", name: "MOTION GRAPHICS", description: "Breathing life into visual assets with vector kinetic type, elegant title transitions, and logo animations.", icon: "Zap", display_order: 4 },
-    { id: "5", name: "DIGITAL ASSETS", description: "Providing social media templates, banners, visual presentation slide systems, and custom graphics.", icon: "Layout", display_order: 5 }
+    { id: "1", name: "VIDEO EDITING", description: "Polishing dynamic short-form videos, commercials, visual loops, and multi-track timelines with rhythmic cuts.", icon: "Video", display_order: 1 },
+    { id: "2", name: "MOTION GRAPHICS", description: "Breathing life into visual assets with kinetic type, elegant title transitions, and logo animations.", icon: "Zap", display_order: 2 },
+    { id: "3", name: "COLOR GRADING", description: "Shaping mood and cinematic tone with precise color correction, LUT workflows, and consistent grade passes.", icon: "Sliders", display_order: 3 },
+    { id: "4", name: "SOUND DESIGN", description: "Syncing cuts to the beat, cleaning dialogue, and layering soundscapes that make every edit land harder.", icon: "Activity", display_order: 4 },
+    { id: "5", name: "SOCIAL CONTENT", description: "Producing platform-native reels, shorts, and promos cut for retention, with captions and motion hooks.", icon: "Play", display_order: 5 }
   ];
 
   const activeServices = React.useMemo(() => {
@@ -96,12 +96,12 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
             <h1 className={`text-4xl md:text-7xl font-extrabold uppercase leading-none mt-6 tracking-display ${
               isLight ? "text-black" : "text-white"
             }`}>
-              CRAFTING BRAND <br /> ARCHITECTURES.
+              CUTTING MOTION <br /> INTO MEANING.
             </h1>
             <p className={`text-lg max-w-2xl mt-6 leading-relaxed ${
               isLight ? "text-gray-600" : "text-gray-400"
             }`}>
-              A comprehensive suite of high-fidelity creative services designed to elevate your brand presence through extreme mathematical precision, robust strategy, and dark high-contrast aesthetic rigor.
+              A complete post-production toolkit — rhythmic editing, expressive motion graphics, cinematic color, and sound that lands — built to make every frame earn attention.
             </p>
           </motion.div>
         </section>
@@ -165,10 +165,10 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
               <div className="flex gap-4">
                 <button 
                   onClick={onContactClick}
-                  className={`px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer shadow-lg active:scale-95 ${
-                    isLight 
-                      ? "bg-black text-white hover:bg-gray-800" 
-                      : "bg-white text-black hover:bg-gray-200"
+                  className={`px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all cursor-pointer active:scale-95 border ${
+                    isLight
+                      ? "bg-black border-black text-white hover:bg-transparent hover:text-black"
+                      : "bg-white border-white text-black hover:bg-transparent hover:text-white"
                   }`}
                 >
                   Start a Project
@@ -196,7 +196,7 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
             }`}>
               <img
                 alt="Brutalist architectural detail"
-                className="w-full h-full object-cover grayscale hover:grayscale-0 opacity-60 hover:scale-105 hover:opacity-80 transition-all duration-1000 ease-out"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out"
                 referrerPolicy="no-referrer"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVXsVo7rbGESsGF3-0ykLaVNQ6CI3wTH5Cw9TjayRBYG0H-JPhqy67oEt0spd_0fCF9GUP-35e3R-kRZtObe-LU98yavS7ouPJ7webbK1yKy5wFo5Q61BnJKQ4N5ERzbptuSltzN9fm0XkyMaqayIODeUyWe9J9gvPxF1muyiyOMG81a6jNmGlc0MLrYlnKgZaghmWR8GYK4mfDGIyl5gM2JOu1u_xJv96JoRH4qPcpKycAI0MIHatd02Z4PLJdiAmGrzavnQ6DQ"
               />
@@ -212,7 +212,7 @@ export default function Capabilities({ isFullView = false, onContactClick, onJou
 
   // Quick horizontal Capabilities preview for Home Tab
   return (
-    <section className={`py-24 border-y transition-colors duration-300 ${
+    <section className={`py-24 md:py-40 border-y transition-colors duration-300 ${
       isLight ? "bg-zinc-200 border-black/10" : "bg-[#262626] border-white/10"
     }`} id="capabilities-quick">
       <div className="max-w-7xl mx-auto px-6">

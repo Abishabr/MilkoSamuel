@@ -21,7 +21,7 @@ export default function MyProcess() {
   const steps = dynamicSteps && dynamicSteps.length > 0 ? dynamicSteps : fallbackSteps;
 
   return (
-    <section className={`py-24 transition-colors duration-300 ${
+    <section className={`py-24 md:py-40 transition-colors duration-300 ${
       isLight ? "bg-white text-black" : "bg-[#0e0e0e] text-white"
     }`} id="process-section">
       <div className="max-w-7xl mx-auto px-6">

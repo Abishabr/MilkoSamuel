@@ -3,6 +3,7 @@ import { Project } from "../types";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
+import { resolveProjectCover } from "../lib/youtube";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -42,7 +43,6 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
         <header className={`flex flex-col items-center justify-center text-center py-20 border mb-16 relative transition-colors duration-300 ${
           isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
         }`}>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
           <div className="max-w-2xl px-6 relative z-10">
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
@@ -94,7 +94,7 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
           <AnimatePresence mode="popLayout">
             {filteredProjects.length > 0 ? (
               filteredProjects.map((project, index) => {
-                const projectImg = project.cover_image_url;
+                const projectImg = resolveProjectCover(project);
                 const projectYear = project.project_date;
                 const tagsList = project.technologies || [];
                 return (
@@ -123,9 +123,9 @@ export default function PortfolioArchive({ onSelectProject }: PortfolioArchivePr
                     }`}>
                       <img
                         alt={project.title}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ease-out"
+                        className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
                         referrerPolicy="no-referrer"
-                        src={projectImg}
+                        src={projectImg ?? undefined}
                       />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <span className="text-xs font-mono font-bold tracking-widest border border-white px-6 py-2.5 bg-black/80 text-white">

@@ -45,7 +45,7 @@ export default function AdminLogin({ onLoginSuccess, onBackToPortfolio, sessionE
 
   return (
     <div className="min-h-screen py-16 flex items-center justify-center bg-background text-foreground transition-colors duration-300">
-      <Card className="w-full max-w-md relative shadow-2xl">
+      <Card className="w-full max-w-md relative">
         {/* Admin-only theme toggle */}
         <Button
           type="button"
@@ -58,19 +58,19 @@ export default function AdminLogin({ onLoginSuccess, onBackToPortfolio, sessionE
           {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
         </Button>
 
-        <CardHeader className="text-center pt-10">
-          <div className="inline-flex items-center justify-center w-12 h-12 mb-4 mx-auto font-bold text-xl bg-primary text-primary-foreground">
+        <CardHeader className="pt-12 px-10 border-b pb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 mb-8 font-extrabold text-lg bg-primary text-primary-foreground border border-primary">
             SM
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tighter uppercase font-sans">
-            Portfolio Admin Portal
-          </h1>
-          <p className="text-xs mt-1 font-mono uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground mb-3">
             Authorized access only
           </p>
+          <h1 className="text-4xl font-extrabold tracking-display uppercase font-sans leading-[0.9]">
+            Admin<br />Portal
+          </h1>
         </CardHeader>
 
-        <CardContent className="px-10 pb-10">
+        <CardContent className="px-10 pb-10 pt-8">
           {sessionExpired && !authError && (
             <Alert className="mb-6 border-amber-500/50 text-amber-600 dark:text-amber-400">
               <Timer className="w-4 h-4" />
@@ -89,7 +89,7 @@ export default function AdminLogin({ onLoginSuccess, onBackToPortfolio, sessionE
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="admin-email" className="text-[10px] font-bold uppercase tracking-wider font-mono text-muted-foreground">
+              <Label htmlFor="admin-email" className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-muted-foreground">
                 Email Address
               </Label>
               <Input
@@ -104,7 +104,7 @@ export default function AdminLogin({ onLoginSuccess, onBackToPortfolio, sessionE
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="admin-password" className="text-[10px] font-bold uppercase tracking-wider font-mono text-muted-foreground">
+              <Label htmlFor="admin-password" className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-muted-foreground">
                 Access Password
               </Label>
               <Input
@@ -121,7 +121,7 @@ export default function AdminLogin({ onLoginSuccess, onBackToPortfolio, sessionE
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full p-6 text-xs font-bold uppercase tracking-widest group"
+              className="w-full p-6 text-[11px] font-bold uppercase tracking-[0.2em] group border border-primary hover:bg-transparent hover:text-foreground"
             >
               {submitting ? "Signing In..." : "Sign In to Dashboard"}
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

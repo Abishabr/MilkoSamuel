@@ -17,11 +17,11 @@ export default function Hero({ onViewWork, onContact }: HeroProps) {
   const isLight = theme === "light";
   const { settings } = useData();
 
-  const heroParagraph = settings?.hero_text || "I create eye-catching designs and engaging videos that combine creativity and strategy to help brands stand out and connect with their audience.";
+  const heroParagraph = settings?.hero_text || "I cut, grade, and animate stories that hold attention — combining rhythmic editing and expressive motion graphics to help brands connect with their audience.";
   const heroImg = settings?.profile_picture_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBDZ38TfxyqRb4zhdOToTHQ8R81gjtmltwGmQbLvq4Loe94oaP6YHB47rpSpGcUYbU2xsjiiFUrx8aQXIwMjVffL-I9LHa3gH65XaibsGFtPLN7VQ9uLT3Hz6I2KZFlPcLQT3e1r9GtdfRGhhZTvDc5JztDyGFnMmwSRlRUK1YvZ0Q-KNysyxRXKyNuOvRY6SMgMpnTfgNdDLJTvrdM-Rke6tY_IFPCSdU-MkRevFjXV4z0ko1yPzv7hCFWOY3mytZ19L01t3ZEujHy";
 
   // Staggered line-by-line reveal for the display heading
-  const headlineLines = ["DESIGNING", "DIGITAL", "EXPERIENCES"];
+  const headlineLines = ["EDITING", "MOTION &", "STORIES"];
 
   return (
     <section className="relative min-h-[90vh] flex items-center px-6 pt-24 overflow-hidden" id="hero-section">
@@ -88,7 +88,7 @@ export default function Hero({ onViewWork, onContact }: HeroProps) {
           >
             <button
               onClick={onViewWork}
-              className={`group px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer shadow-lg active:scale-[0.98] inline-flex items-center gap-2 ${
+              className={`group px-8 py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 cursor-pointer active:scale-[0.98] inline-flex items-center gap-2 ${
                 isLight
                   ? "bg-black text-white hover:bg-gray-800"
                   : "bg-white text-black hover:bg-gray-200"
@@ -122,27 +122,27 @@ export default function Hero({ onViewWork, onContact }: HeroProps) {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.9, ease: EASE }}
-            className={`absolute top-10 right-4 z-20 flex items-center space-x-2 backdrop-blur border px-4 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase ${
+            className={`absolute top-10 right-4 z-20 flex items-center space-x-2 backdrop-blur border px-4 py-2 text-[10px] font-bold tracking-widest uppercase ${
               isLight
                 ? "bg-white/80 border-black/10 text-black"
                 : "bg-[#131313]/80 border-white/10 text-white"
             }`}
           >
-            <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+            <span className={`w-2 h-2 animate-pulse ${isLight ? "bg-black" : "bg-white"}`}></span>
             <span>Available for Remote Work</span>
           </motion.div>
 
-          {/* Hero Image — grayscale at rest, color on hover: the signature reveal */}
+          {/* Hero Image — full color, gentle zoom on hover */}
           <div
-            className={`w-full max-w-xl aspect-[4/5] overflow-hidden border shadow-2xl transition-all duration-300 ${
+            className={`w-full max-w-xl aspect-[4/5] overflow-hidden border transition-all duration-300 ${
               isLight
                 ? "bg-zinc-200 border-black/5"
                 : "bg-[#262626] border-white/5"
             }`}
           >
             <img
-              alt="Samuel Milko, graphic designer and video editor"
-              className="w-full h-full object-cover grayscale hover:grayscale-0 brightness-95 opacity-90 hover:opacity-100 hover:scale-[1.02] transition-all duration-700 ease-out"
+              alt="Samuel Milko, video editor and motion graphics artist"
+              className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700 ease-out"
               referrerPolicy="no-referrer"
               src={heroImg}
             />

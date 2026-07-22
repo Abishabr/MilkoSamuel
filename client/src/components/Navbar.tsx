@@ -23,7 +23,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
 
   return (
     <header className={`fixed top-0 left-0 w-full z-50 bg-custom-nav backdrop-blur-md border-b transition-colors duration-300 ${
-      isLight ? "border-black/10 shadow-sm" : "border-white/10"
+      isLight ? "border-black/10" : "border-white/10"
     }`}>
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Logo */}
@@ -46,10 +46,10 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             }`}>
               samuel milko
             </p>
-            <p className={`text-[10px] uppercase tracking-tighter ${
+            <p className={`text-[10px] uppercase tracking-[0.1em] ${
               isLight ? "text-gray-600" : "text-gray-400"
             }`}>
-              Graphics designer &amp; video editor
+              Video editor &amp; motion graphics
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export default function Navbar({ activeTab, setActiveTab }: NavbarProps) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className={`fixed top-20 left-0 w-full z-40 flex flex-col p-8 transition-all duration-300 border-b shadow-2xl overflow-hidden ${
+            className={`fixed top-20 left-0 w-full z-40 flex flex-col p-8 transition-all duration-300 border-b overflow-hidden ${
               isLight ? "bg-white border-black/10 text-black" : "bg-[#131313] border-white/10 text-white"
             } backdrop-blur-md`}
           >

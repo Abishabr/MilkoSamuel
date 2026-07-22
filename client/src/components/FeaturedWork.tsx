@@ -3,6 +3,7 @@ import { Project } from "../types";
 import { motion } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
 import { useData } from "../context/DataContext";
+import { resolveProjectCover } from "../lib/youtube";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -34,7 +35,7 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
   }
 
   return (
-    <section className={`py-24 border-t transition-colors duration-300 ${
+    <section className={`py-24 md:py-40 border-t transition-colors duration-300 ${
       isLight ? "bg-zinc-200 border-black/10" : "bg-[#262626] border-white/10"
     }`} id="work-featured">
       <div className="max-w-7xl mx-auto px-6">
@@ -62,7 +63,7 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
         {/* Grid of Projects */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {featured.map((project, idx) => {
-            const projectImg = project.cover_image_url;
+            const projectImg = resolveProjectCover(project);
             const projectYear = project.project_date;
             return (
               <motion.div
@@ -87,11 +88,11 @@ export default function FeaturedWork({ onSelectProject, onViewAll }: FeaturedWor
                 <div className={`aspect-[3/4] mb-6 overflow-hidden relative border transition-colors duration-300 ${
                   isLight ? "bg-white border-black/10" : "bg-[#131313] border-white/10"
                 }`}>
-                  <img 
-                    alt={project.title} 
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-700 ease-out"
+                  <img
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
                     referrerPolicy="no-referrer"
-                    src={projectImg}
+                    src={projectImg ?? undefined}
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <span className={`text-xs font-bold tracking-widest uppercase border px-4 py-2 bg-black/80 ${

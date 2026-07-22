@@ -96,7 +96,7 @@
   --bg-secondary: #1b1b1b;
   --bg-tertiary: #0e0e0e;
   --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
+  --text-secondary: #c4c7c8;
   --border-color: rgba(255, 255, 255, 0.1);
   --border-color-soft: rgba(255, 255, 255, 0.05);
   --nav-bg: rgba(19, 19, 19, 0.9);
@@ -176,7 +176,7 @@ body {
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: 4px;
+  border-radius: 0;
   transition: background-color 0.3s ease;
 }
 ::-webkit-scrollbar-thumb:hover {

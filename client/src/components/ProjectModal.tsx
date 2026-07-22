@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
 import { Project } from "../types";
-import { X, Calendar, User, Briefcase, Clock, MessageSquare, ArrowRight } from "lucide-react";
+import { X, User, MessageSquare, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useTheme } from "../context/ThemeContext";
-import { useData } from "../context/DataContext";
-import { toYouTubeEmbedUrl } from "../lib/youtube";
+import { toYouTubeEmbedUrl, resolveProjectCover } from "../lib/youtube";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -17,12 +16,6 @@ interface ProjectModalProps {
 export default function ProjectModal({ project, onClose, onStartTalk }: ProjectModalProps) {
   const { theme } = useTheme();
   const isLight = theme === "light";
-  const { categories } = useData();
-
-  // Resolve the category UUID to its display name
-  const categoryName = project?.category_id
-    ? categories.find((c) => c.id === project.category_id)?.name ?? "—"
-    : "—";
 
   // Prevent background scroll when modal is active
   useEffect(() => {
@@ -68,7 +61,7 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 16 }}
           transition={{ duration: 0.45, ease: EASE }}
-          className={`relative w-full max-w-5xl border shadow-2xl h-[90vh] md:h-[85vh] flex flex-col overflow-hidden transition-colors duration-300 ${
+          className={`relative w-full max-w-5xl border h-[90vh] md:h-[85vh] flex flex-col overflow-hidden transition-colors duration-300 ${
             isLight ? "bg-white border-black/10 text-black" : "bg-[#131313] border-white/10 text-white"
           }`}
         >
@@ -98,14 +91,14 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
           <div className="flex-1 overflow-y-auto p-6 md:p-12 space-y-12 scrollbar-none select-text">
             {/* Project Hero Row */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              <div className={`lg:col-span-7 aspect-[16/10] overflow-hidden border shadow-lg transition-colors duration-300 ${
+              <div className={`lg:col-span-7 aspect-[16/10] overflow-hidden border transition-colors duration-300 ${
                 isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
               }`}>
-                <img 
-                  alt={project.title} 
-                  className="w-full h-full object-cover grayscale brightness-90 hover:grayscale-0 hover:brightness-100 hover:scale-[1.02] transition-all duration-700 ease-out"
+                <img
+                  alt={project.title}
+                  className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-700 ease-out"
                   referrerPolicy="no-referrer"
-                  src={project.cover_image_url ?? ""}
+                  src={resolveProjectCover(project) ?? ""}
                 />
               </div>
 
@@ -124,86 +117,18 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
                   </p>
                 </div>
 
-                {/* Key value grid columns */}
-                <div className={`grid grid-cols-2 gap-4 border-t pt-6 transition-colors duration-300 ${
-                  isLight ? "border-black/10" : "border-white/10"
-                }`}>
-                  <div className={`flex items-center space-x-3 ${isLight ? "text-gray-600" : "text-gray-400"}`}>
+                {/* Client */}
+                {project.client && (
+                  <div className={`flex items-center space-x-3 border-t pt-6 transition-colors duration-300 ${
+                    isLight ? "border-black/10" : "border-white/10"
+                  }`}>
                     <User className={`w-4 h-4 ${isLight ? "text-gray-600" : "text-gray-500"}`} />
                     <div>
                       <p className={`text-[9px] font-mono tracking-widest uppercase ${isLight ? "text-gray-600" : "text-gray-500"}`}>Client</p>
-                      <p className={`text-xs font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{project.client}</p>
+                      <p className={`text-sm font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{project.client}</p>
                     </div>
                   </div>
-
-                  <div className={`flex items-center space-x-3 ${isLight ? "text-gray-600" : "text-gray-400"}`}>
-                    <Briefcase className={`w-4 h-4 ${isLight ? "text-gray-600" : "text-gray-500"}`} />
-                    <div>
-                      <p className={`text-[9px] font-mono tracking-widest uppercase ${isLight ? "text-gray-600" : "text-gray-500"}`}>Category</p>
-                      <p className={`text-xs font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{categoryName}</p>
-                    </div>
-                  </div>
-
-                  <div className={`flex items-center space-x-3 ${isLight ? "text-gray-600" : "text-gray-400"}`}>
-                    <Calendar className={`w-4 h-4 ${isLight ? "text-gray-600" : "text-gray-500"}`} />
-                    <div>
-                      <p className={`text-[9px] font-mono tracking-widest uppercase ${isLight ? "text-gray-600" : "text-gray-500"}`}>Year Released</p>
-                      <p className={`text-xs font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{project.project_date ?? "—"}</p>
-                    </div>
-                  </div>
-
-                  <div className={`flex items-center space-x-3 ${isLight ? "text-gray-600" : "text-gray-400"}`}>
-                    <Clock className={`w-4 h-4 ${isLight ? "text-gray-600" : "text-gray-500"}`} />
-                    <div>
-                      <p className={`text-[9px] font-mono tracking-widest uppercase ${isLight ? "text-gray-600" : "text-gray-500"}`}>Featured</p>
-                      <p className={`text-xs font-sans font-bold ${isLight ? "text-black" : "text-white"}`}>{project.is_featured ? "Yes" : "No"}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Strategic Details Grid columns */}
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t transition-colors duration-300 ${
-              isLight ? "border-black/10" : "border-white/10"
-            }`}>
-              <div className="space-y-4">
-                <span className={`text-[10px] font-mono tracking-widest block uppercase font-bold ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  01 / The Challenge
-                </span>
-                <p className={`text-xs md:text-sm leading-relaxed font-sans ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  {project.challenges || "To reposition the brand and deliver extreme focus into their target client demographic with unique architectural layouts and minimalist style rules."}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <span className={`text-[10px] font-mono tracking-widest block uppercase font-bold ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  02 / The Solution
-                </span>
-                <p className={`text-xs md:text-sm leading-relaxed font-sans ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  {project.creative_process || "We crafted a geometric branding system and combined high-contrast fullscreen responsive modules to simplify density and enrich digital presence."}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <span className={`text-[10px] font-mono tracking-widest block uppercase font-bold ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  03 / The Outcome
-                </span>
-                <p className={`text-xs md:text-sm leading-relaxed font-sans ${
-                  isLight ? "text-gray-600" : "text-gray-400"
-                }`}>
-                  {project.final_result || "Repositioned target brand, resulting in over 140% surge in customer engagement queries, positive feedback loop, and design layout award honors."}
-                </p>
+                )}
               </div>
             </div>
 
@@ -266,7 +191,7 @@ export default function ProjectModal({ project, onClose, onStartTalk }: ProjectM
               </div>
               <button 
                 onClick={onStartTalk}
-                className={`inline-flex items-center gap-3 px-8 py-4 text-xs font-mono font-bold uppercase tracking-widest transition-all cursor-pointer active:scale-95 shadow ${
+                className={`inline-flex items-center gap-3 px-8 py-4 text-xs font-mono font-bold uppercase tracking-widest transition-all cursor-pointer active:scale-95 ${
                   isLight 
                     ? "bg-black text-white hover:bg-gray-800" 
                     : "bg-white text-black hover:bg-gray-200"

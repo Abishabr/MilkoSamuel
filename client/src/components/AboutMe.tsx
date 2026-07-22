@@ -14,25 +14,25 @@ export default function AboutMe({ onLearnMore }: AboutMeProps) {
   const isLight = theme === "light";
   const { settings, philosophyItems } = useData();
 
-  const bioStory = settings?.biography || `I'm Samuel Milko, a Graphic Designer and Video Editor focused on creating visually compelling designs and engaging video content that bring ideas to life.
+  const bioStory = settings?.biography || `I'm Samuel Milko, a Video Editor and Motion Graphics artist focused on crafting rhythmic edits and expressive animation that bring stories to life.
 
-I combine raw creativity with surgical attention to detail to deliver impactful branding, social media systems, motion visuals, and professional video edits that leave a lasting mark.
+I combine raw creativity with surgical attention to detail to deliver impactful commercials, social media content, kinetic type, and professional video edits that leave a lasting mark.
 
-I help forward-thinking brands and ambitious creators turn chaotic ideas into clean, eye-catching, and high-performance realities.`;
+I help forward-thinking brands and ambitious creators turn raw footage and chaotic ideas into clean, captivating, and high-performance films.`;
 
   // Render paragraphs for multi-line support
   const bioParagraphs = bioStory.split("\n\n").map(p => p.trim()).filter(Boolean);
 
   const defaultPhilosophy = [
-    { id: "1", title: "Clarity", description: "Simplicity is not minimalism. It is making the complex feel entirely effortless and transparent." },
-    { id: "2", title: "Function", description: "Design must serve a strategic purpose first, removing friction and guiding user interaction naturally." },
-    { id: "3", title: "Impact", description: "Great design leaves an indelible, lasting visual memory and drives measurable growth and outcomes." }
+    { id: "1", title: "Rhythm", description: "Every cut has a beat. Pacing is what turns footage into a story the viewer can feel, not just watch." },
+    { id: "2", title: "Function", description: "Motion must serve the story first, guiding attention naturally and removing everything that distracts from it." },
+    { id: "3", title: "Impact", description: "Great editing leaves an indelible, lasting visual memory and drives measurable growth and outcomes." }
   ];
 
   const activePhilosophy = philosophyItems && philosophyItems.length > 0 ? philosophyItems : defaultPhilosophy;
 
   return (
-    <section className={`py-24 transition-colors duration-300 ${
+    <section className={`py-24 md:py-40 transition-colors duration-300 ${
       isLight ? "bg-white text-black" : "bg-[#0e0e0e] text-white"
     }`} id="about-intro-section">
       <div className="max-w-7xl mx-auto px-6">
@@ -53,7 +53,7 @@ I help forward-thinking brands and ambitious creators turn chaotic ideas into cl
             <h2 className={`text-4xl md:text-5xl font-extrabold uppercase leading-[1.0] tracking-display mb-8 ${
               isLight ? "text-black" : "text-white"
             }`}>
-              Design is thinking <br /> made visible.
+              Motion is thinking <br /> made visible.
             </h2>
             <div className={`space-y-6 text-sm leading-relaxed font-sans ${
               isLight ? "text-gray-600" : "text-gray-400"

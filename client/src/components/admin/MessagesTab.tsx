@@ -66,7 +66,7 @@ export default function MessagesTab({ messages, loadingMessages, onRefresh, show
             className={`py-0 transition-colors ${
               msg.is_read
                 ? "bg-muted/40 opacity-80"
-                : "bg-card border-foreground/20 font-semibold shadow-md"
+                : "bg-card border-foreground/40 font-semibold"
             }`}
           >
             <CardContent className="p-6">

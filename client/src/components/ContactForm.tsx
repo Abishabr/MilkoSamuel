@@ -137,7 +137,7 @@ export default function ContactForm() {
         <div className="max-w-7xl mx-auto px-6 md:px-16 grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left: Interactive Form Card */}
           <div
-            className={`lg:col-span-7 p-8 md:p-12 border relative shadow-xl transition-all duration-300 ${
+            className={`lg:col-span-7 p-8 md:p-12 border relative transition-all duration-300 ${
               isLight
                 ? "bg-white border-black/5 text-black"
                 : "bg-[#131313] border-white/5 text-white"
@@ -320,7 +320,7 @@ export default function ContactForm() {
           {/* Right: Details Card */}
           <div className="lg:col-span-5 flex flex-col">
             <div
-              className={`p-8 md:p-12 border flex flex-col justify-between grow shadow-2xl rounded-none transition-colors duration-300 ${
+              className={`p-8 md:p-12 border flex flex-col justify-between grow transition-colors duration-300 ${
                 isLight
                   ? "bg-black border-black/10 text-white"
                   : "bg-[#131313] border-white/5 text-white"

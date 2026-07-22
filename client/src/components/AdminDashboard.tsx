@@ -12,7 +12,9 @@ import {
   MessageSquare,
   Layers,
   Briefcase,
-  ExternalLink,
+  Settings,
+  Tag,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -190,25 +192,49 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
     { label: "Unread Messages", value: unreadCount, icon: MessageSquare, tab: "messages" },
   ];
 
+  // Mobile bottom bar mirrors the desktop rail's sections.
+  const navItems = [
+    { id: "settings", label: "Settings", icon: Settings },
+    { id: "projects", label: "Projects", icon: Folder },
+    { id: "categories", label: "Tags", icon: Tag },
+    { id: "services", label: "Services", icon: Layers },
+    { id: "process", label: "Process", icon: BookOpen },
+    { id: "experiences", label: "History", icon: Briefcase },
+    { id: "messages", label: "Inbox", icon: MessageSquare },
+  ];
+
   // Dashboard content
+  const showOverview = activeTab === "settings";
+
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
         <Toaster position="top-right" />
 
-        {/* ── Top header bar ─────────────────────────────────────────────── */}
-        <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-md transition-colors duration-300">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        {/* ── Fixed left navigation rail (desktop) ───────────────────────── */}
+        <AdminSidebar
+          activeTab={activeTab}
+          unreadCount={unreadCount}
+          onTabChange={setActiveTab}
+          onLogout={handleLogout}
+          onBackToPortfolio={onBackToPortfolio}
+        />
+
+        {/* ── Main content, offset by the rail on desktop ────────────────── */}
+        <main className="lg:ml-64 flex flex-col min-h-screen">
+          {/* Top breadcrumb bar */}
+          <header className="sticky top-0 z-30 h-16 px-6 md:px-12 flex items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-md transition-colors duration-300">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 flex items-center justify-center font-extrabold text-sm bg-primary text-primary-foreground flex-shrink-0">
+              {/* Mobile brand mark (rail is hidden below lg) */}
+              <div className="lg:hidden w-8 h-8 flex items-center justify-center font-extrabold text-xs bg-primary text-primary-foreground border border-primary flex-shrink-0">
                 SM
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-extrabold uppercase tracking-wider truncate">Admin Console</p>
-                <p className="text-[10px] font-mono uppercase tracking-widest truncate text-muted-foreground">
-                  Samuel Milko Portfolio
-                </p>
-              </div>
+              <span className="text-[10px] tracking-[0.2em] uppercase font-bold text-muted-foreground hidden sm:inline">
+                Admin /
+              </span>
+              <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-foreground truncate">
+                {heading.title}
+              </h2>
             </div>
 
             <div className="flex items-center gap-2">
@@ -223,9 +249,7 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
                     {formatRemaining(remainingMs)}
                   </Badge>
                 </TooltipTrigger>
-                <TooltipContent>
-                  Time until automatic sign-out — activity extends it
-                </TooltipContent>
+                <TooltipContent>Time until automatic sign-out — activity extends it</TooltipContent>
               </Tooltip>
 
               {/* Admin-only theme toggle */}
@@ -240,101 +264,124 @@ export default function AdminDashboard({ onBackToPortfolio }: AdminDashboardProp
                 </TooltipContent>
               </Tooltip>
 
-              {onBackToPortfolio && (
-                <Button
-                  variant="outline"
-                  onClick={onBackToPortfolio}
-                  className="hidden md:flex text-[10px] font-bold uppercase tracking-widest"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  View Site
-                </Button>
-              )}
-
-              <Button onClick={handleLogout} className="text-[10px] font-bold uppercase tracking-widest">
+              {/* Sign out is in the rail on desktop; surface it here on mobile */}
+              <Button
+                onClick={handleLogout}
+                className="lg:hidden text-[10px] font-bold uppercase tracking-widest"
+              >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          {/* ── Overview stat cards ───────────────────────────────────────── */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {statCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <Card
-                  key={card.label}
-                  onClick={() => setActiveTab(card.tab)}
-                  className="group cursor-pointer py-0 transition-all duration-200 hover:border-foreground/40 hover:shadow-lg"
-                >
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between">
-                      <p className="text-[10px] font-bold uppercase tracking-widest font-mono text-muted-foreground">
-                        {card.label}
+          {/* Canvas — extra bottom padding on mobile to clear the fixed tab bar */}
+          <div className="flex-1 p-6 md:p-12 pb-28 lg:pb-12">
+            {/* Section title band */}
+            <section className="mb-10 md:mb-14">
+              <p className="text-[10px] font-bold uppercase tracking-[0.3em] font-mono text-muted-foreground mb-3 flex items-center gap-3">
+                {heading.subtitle}
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-muted-foreground">
+                  <span className="w-1.5 h-1.5 bg-foreground animate-pulse" />
+                  Live
+                </span>
+              </p>
+              <h1 className="text-4xl md:text-6xl font-extrabold uppercase leading-[0.9] tracking-display select-none">
+                {heading.title}
+              </h1>
+              <div className="w-16 h-[2px] bg-primary mt-6" />
+            </section>
+
+            {/* Overview KPI grid — only on the landing (settings) tab */}
+            {showOverview && (
+              <div className="grid grid-cols-2 lg:grid-cols-4 border-t border-l mb-14">
+                {statCards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <button
+                      key={card.label}
+                      onClick={() => setActiveTab(card.tab)}
+                      className="group cursor-pointer text-left border-r border-b p-6 md:p-8 transition-colors duration-200 hover:bg-accent focus-visible:bg-accent"
+                    >
+                      <div className="flex items-start justify-between mb-8">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono text-muted-foreground">
+                          {card.label}
+                        </p>
+                        <Icon
+                          className="w-4 h-4 text-muted-foreground opacity-40 transition-opacity group-hover:opacity-100"
+                          strokeWidth={1.5}
+                        />
+                      </div>
+                      <p className="text-5xl md:text-6xl font-extrabold tracking-display leading-none">
+                        {card.value}
                       </p>
-                      <Icon className="w-4 h-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-                    </div>
-                    <p className="text-3xl font-extrabold tracking-tighter mt-3 font-sans">
-                      {card.value}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left column navigation panel */}
-            <AdminSidebar
-              activeTab={activeTab}
-              unreadCount={unreadCount}
-              onTabChange={setActiveTab}
-              onLogout={handleLogout}
-              onBackToPortfolio={onBackToPortfolio}
-            />
-
-            {/* Right column main content dashboard view */}
-            <div className="lg:col-span-9">
-              <Card className="min-h-[600px] py-0 gap-0">
-                {/* Section heading strip */}
-                <div className="px-8 py-5 border-b flex items-center justify-between">
-                  <div>
-                    <h1 className="text-lg font-extrabold tracking-tighter uppercase font-sans">
-                      {heading.title}
-                    </h1>
-                    <p className="text-[10px] font-mono uppercase tracking-widest mt-0.5 text-muted-foreground">
-                      {heading.subtitle}
-                    </p>
-                  </div>
-                  <span className="hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    Live
-                  </span>
-                </div>
-
-                <div className="p-8">
-                  {activeTab === "settings" && <SettingsTab {...tabProps} />}
-                  {activeTab === "projects" && <ProjectsTab {...tabProps} />}
-                  {activeTab === "categories" && <CategoriesTab {...tabProps} />}
-                  {activeTab === "services" && <ServicesSkillsTab {...tabProps} />}
-                  {activeTab === "process" && <ProcessPhilosophyTab {...tabProps} />}
-                  {activeTab === "experiences" && <ExperiencesSocialsTab {...tabProps} />}
-                  {activeTab === "messages" && (
-                    <MessagesTab
-                      messages={messages}
-                      loadingMessages={loadingMessages}
-                      onRefresh={fetchMessagesData}
-                      showToast={showToast}
-                    />
-                  )}
-                </div>
-              </Card>
+            {/* Active tab content */}
+            <div className="border-t pt-10 md:pt-12">
+              {activeTab === "settings" && <SettingsTab {...tabProps} />}
+              {activeTab === "projects" && <ProjectsTab {...tabProps} />}
+              {activeTab === "categories" && <CategoriesTab {...tabProps} />}
+              {activeTab === "services" && <ServicesSkillsTab {...tabProps} />}
+              {activeTab === "process" && <ProcessPhilosophyTab {...tabProps} />}
+              {activeTab === "experiences" && <ExperiencesSocialsTab {...tabProps} />}
+              {activeTab === "messages" && (
+                <MessagesTab
+                  messages={messages}
+                  loadingMessages={loadingMessages}
+                  onRefresh={fetchMessagesData}
+                  showToast={showToast}
+                />
+              )}
             </div>
           </div>
-        </div>
+
+          {/* Footer */}
+          <footer className="hidden lg:flex flex-col sm:flex-row justify-between items-center gap-4 py-8 px-6 md:px-12 mt-auto border-t bg-card">
+            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              © 2026 Samuel Milko Portfolio — Admin
+            </div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              Changes publish instantly
+            </div>
+          </footer>
+        </main>
+
+        {/* ── Fixed bottom navigation (mobile only) ──────────────────────── */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 z-50 flex items-stretch border-t bg-card overflow-x-auto scrollbar-none">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                aria-label={item.label}
+                className={`relative flex flex-col items-center justify-center gap-1 flex-1 min-w-[64px] transition-colors ${
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {/* Lit-from-within active edge along the top */}
+                {isActive && <span className="absolute top-0 left-0 right-0 h-[2px] bg-primary" />}
+                <span className="relative">
+                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2 : 1.5} />
+                  {item.id === "messages" && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-2 min-w-[14px] h-[14px] px-0.5 flex items-center justify-center bg-destructive text-white text-[8px] font-bold">
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.1em] leading-none">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
     </TooltipProvider>
   );

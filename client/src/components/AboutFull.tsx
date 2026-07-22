@@ -31,20 +31,19 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
   const completed = projects.length > 0 ? String(projects.length) : (settings?.projects_completed || "48");
   const clients = settings?.happy_clients || "35";
   const profileImg = settings?.profile_picture_url || "https://lh3.googleusercontent.com/aida-public/AB6AXuBDZ38TfxyqRb4zhdOToTHQ8R81gjtmltwGmQbLvq4Loe94oaP6YHB47rpSpGcUYbU2xsjiiFUrx8aQXIwMjVffL-I9LHa3gH65XaibsGFtPLN7VQ9uLT3Hz6I2KZFlPcLQT3e1r9GtdfRGhhZTvDc5JztDyGFnMmwSRlRUK1YvZ0Q-KNysyxRXKyNuOvRY6SMgMpnTfgNdDLJTvrdM-Rke6tY_IFPCSdU-MkRevFjXV4z0ko1yPzv7hCFWOY3mytZ19L01t3ZEujHy";
-  const bioStory = settings?.biography || "I am Samuel Milko, a multidisciplinary graphic designer and digital visual director based in Addis Ababa, Ethiopia, specializing in high-fidelity experiences that bridge raw human intuition and mathematical precision.";
+  const bioStory = settings?.biography || "I am Samuel Milko, a video editor and motion graphics artist based in Addis Ababa, Ethiopia, specializing in rhythmic storytelling that bridges raw human intuition and technical precision.";
 
   const activeStats = [
     { label: "Years Experience", value: years },
     { label: "Projects Completed", value: completed },
-    { label: "Happy Clients", value: clients },
-    { label: "Visual Outputs", value: "1200+" }
+    { label: "Happy Clients", value: clients }
   ];
 
   const fallbackSkills = [
-    { name: "Graphic Design", percentage: 98, display_order: 1 },
-    { name: "Video Editing", percentage: 96, display_order: 2 },
-    { name: "Brand Identity Design", percentage: 94, display_order: 3 },
-    { name: "Motion Graphics", percentage: 92, display_order: 4 },
+    { name: "Video Editing", percentage: 98, display_order: 1 },
+    { name: "Motion Graphics", percentage: 96, display_order: 2 },
+    { name: "Color Grading", percentage: 94, display_order: 3 },
+    { name: "Sound Design & Sync", percentage: 90, display_order: 4 },
     { name: "Adobe Creative Suite", percentage: 97, display_order: 5 }
   ];
 
@@ -73,13 +72,13 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
             <h1 className={`text-4xl md:text-7xl font-extrabold mb-8 leading-none tracking-display ${
               isLight ? "text-black" : "text-white"
             }`}>
-              ARCHITECTING <br /> DIGITAL ELEGANCE.
+              CUTTING STORIES <br /> INTO MOTION.
             </h1>
             <div className={`space-y-6 text-sm md:text-base font-sans leading-relaxed max-w-xl ${
               isLight ? "text-gray-600" : "text-gray-400"
             }`}>
               <p className={`text-lg ${isLight ? "text-black font-semibold" : "text-white"}`}>
-                I am Samuel Milko, a multidisciplinary graphic designer and digital visual director based in Addis Ababa, Ethiopia, specializing in high-fidelity experiences that bridge raw human intuition and mathematical precision.
+                I am Samuel Milko, a video editor and motion graphics artist based in Addis Ababa, Ethiopia, specializing in rhythmic storytelling that bridges raw human intuition and technical precision.
               </p>
               <div className="space-y-4">
                 {bioStory.split("\n\n").map((para, i) => (
@@ -88,28 +87,24 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
               </div>
             </div>
             
-            {/* Download resume CTA */}
-            <div className="mt-10">
-              <a 
-                href={settings?.resume_url || "#resume"}
-                onClick={(e) => { 
-                  if (!settings?.resume_url) {
-                    e.preventDefault(); 
-                    alert("Resume PDF downloaded! (Interactive placeholder)"); 
-                  }
-                }}
-                target={settings?.resume_url ? "_blank" : "_self"}
-                rel="noreferrer"
-                className={`inline-flex items-center gap-4 border px-8 py-4 text-xs font-mono font-bold tracking-widest transition-all group ${
-                  isLight 
-                    ? "border-black text-black hover:bg-black hover:text-white" 
-                    : "border-white text-white hover:bg-white hover:text-black"
-                }`}
-              >
-                DOWNLOAD RESUME
-                <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              </a>
-            </div>
+            {/* Download resume CTA — only rendered when a resume actually exists */}
+            {settings?.resume_url && (
+              <div className="mt-10">
+                <a
+                  href={settings.resume_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`inline-flex items-center gap-4 border px-8 py-4 text-xs font-mono font-bold tracking-widest transition-all group ${
+                    isLight
+                      ? "border-black text-black hover:bg-black hover:text-white"
+                      : "border-white text-white hover:bg-white hover:text-black"
+                  }`}
+                >
+                  DOWNLOAD RESUME
+                  <Download className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                </a>
+              </div>
+            )}
           </motion.div>
 
           {/* Portrait columns */}
@@ -119,7 +114,7 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
             transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
             className="md:col-span-5 relative mt-12 md:mt-0"
           >
-            <div className={`aspect-[4/5] overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 border shadow-2xl ${
+            <div className={`aspect-[4/5] overflow-hidden transition-all duration-700 border ${
               isLight ? "bg-zinc-100 border-black/10" : "bg-[#1b1b1b] border-white/10"
             }`}>
               <img 
@@ -142,7 +137,7 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
         isLight ? "bg-zinc-200 border-black/5" : "bg-[#262626] border-white/5"
       }`}>
         <div className="max-w-7xl mx-auto px-6 md:px-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center md:text-left">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-center md:text-left">
             {activeStats.map((stat, idx) => (
               <motion.div
                 key={stat.label}
@@ -259,7 +254,7 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-80px" }}
                   transition={{ duration: 0.5, delay: idx * 0.06, ease: EASE }}
-                  className={`group border p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-default shadow-md ${
+                  className={`group border p-8 flex flex-col items-center justify-center transition-all duration-300 cursor-default ${
                     isLight
                       ? "bg-white border-black/10 hover:bg-zinc-50"
                       : "bg-[#0e0e0e] border-white/5 hover:bg-[#131313]"
@@ -290,14 +285,14 @@ export default function AboutFull({ onStartProject }: AboutFullProps) {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, ease: EASE }}
-            className="bg-white p-12 md:p-24 text-black text-center shadow-xl"
+            className="bg-white p-12 md:p-24 text-black text-center border border-black/10"
           >
             <h2 className="text-3xl md:text-6xl font-extrabold mb-10 leading-none uppercase tracking-display">
               LET'S CO-CREATE <br /> THE FUTURE.
             </h2>
             <button
               onClick={onStartProject}
-              className="inline-block bg-black text-white px-12 py-5 font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-800 transition-all cursor-pointer shadow-lg active:scale-95"
+              className="inline-block bg-black text-white border border-black px-12 py-5 font-mono text-xs font-bold uppercase tracking-widest hover:bg-transparent hover:text-black transition-all cursor-pointer active:scale-95"
             >
               START A PROJECT
             </button>

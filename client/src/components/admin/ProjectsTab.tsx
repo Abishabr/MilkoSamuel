@@ -3,6 +3,7 @@ import { useData } from "../../context/DataContext";
 import { createProject, updateProject, deleteProject } from "../../lib/api";
 import { Plus, Trash2, Edit2, CircleAlert } from "lucide-react";
 import { openCloudinaryUpload, AdminTabProps } from "./cloudinaryUpload";
+import { resolveProjectCover } from "../../lib/youtube";
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -161,7 +162,7 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
             <div key={proj.id} className="flex items-center justify-between p-4 group hover:bg-muted/50 transition-colors">
               <div className="flex items-center gap-4">
                 <img
-                  src={proj.cover_image_url || ""}
+                  src={resolveProjectCover(proj) ?? ""}
                   alt={proj.title}
                   className="w-16 h-12 object-cover border"
                   referrerPolicy="no-referrer"
@@ -269,10 +270,10 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className={labelCls}>Cover Image URL</Label>
+              <Label className={labelCls}>Cover Image URL (Optional — falls back to the video thumbnail)</Label>
               <div className="flex gap-2">
                 <Input
-                  type="text" required
+                  type="text"
                   className="flex-1"
                   value={projectForm.cover_image_url}
                   onChange={e => setProjectForm({ ...projectForm, cover_image_url: e.target.value })}
@@ -354,66 +355,6 @@ export default function ProjectsTab({ showToast, showWriteError }: AdminTabProps
               value={projectForm.description}
               onChange={e => setProjectForm({ ...projectForm, description: e.target.value })}
             />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-dashed">
-            <div className="space-y-2">
-              <Label className={labelCls}>Creative Process (Solution)</Label>
-              <Textarea
-                rows={4}
-                value={projectForm.creative_process}
-                onChange={e => setProjectForm({ ...projectForm, creative_process: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={labelCls}>Key Challenges Faced</Label>
-              <Textarea
-                rows={4}
-                value={projectForm.challenges}
-                onChange={e => setProjectForm({ ...projectForm, challenges: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className={labelCls}>Final Results &amp; Impact</Label>
-              <Textarea
-                rows={4}
-                value={projectForm.final_result}
-                onChange={e => setProjectForm({ ...projectForm, final_result: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-dashed space-y-4">
-            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">Client Testimonial (Optional)</h4>
-            <div className="space-y-2">
-              <Label className={labelCls}>Testimonial Quote</Label>
-              <Textarea
-                rows={2}
-                value={projectForm.testimonial_quote}
-                onChange={e => setProjectForm({ ...projectForm, testimonial_quote: e.target.value })}
-                placeholder="e.g. Samuel's geometric precision completely redefined our presence. He brought a rare level of craft and vision..."
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className={labelCls}>Testimonial Author Name</Label>
-                <Input
-                  type="text"
-                  value={projectForm.testimonial_author}
-                  onChange={e => setProjectForm({ ...projectForm, testimonial_author: e.target.value })}
-                  placeholder="e.g. Dr. Helena Vanta"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className={labelCls}>Testimonial Author Role / Position</Label>
-                <Input
-                  type="text"
-                  value={projectForm.testimonial_role}
-                  onChange={e => setProjectForm({ ...projectForm, testimonial_role: e.target.value })}
-                  placeholder="e.g. Founder & Creative Director, Vanta Skin"
-                />
-              </div>
-            </div>
           </div>
 
           <div className="flex items-center gap-6 p-4 border">
